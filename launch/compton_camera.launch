@@ -1,0 +1,17 @@
+<launch>
+
+  <arg name="uav_name" default="$(optenv UAV_NAME uav)"/>
+
+  <group ns="$(arg uav_name)">
+
+    <node name="compton_camera" pkg="compton_camera_python" type="compton_camera.py" output="screen" respawn="true">
+
+      <!-- subscribed topics -->
+      <remap from="~radiation_source_in" to="/gazebo/radiation" />
+      <remap from="~odometry_in" to="odometry/odom_main" />
+
+    </node>
+
+  </group>
+
+</launch>
