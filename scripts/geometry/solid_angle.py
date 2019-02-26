@@ -9,17 +9,25 @@ def haversine(a):
 
     return (1.0 - m.cos(a))/2.0
 
-def inv_haversine(a):
+def inv_haversine(h):
 
-    return 2*m.asin(m.sqrt(a))
+    return 2*m.asin(m.sqrt(h))
 
+# a, b, c: the side lenghts in a spherical triangle
 def spherical_angle(a, b, c):
 
-    return inv_haversine((haversine(c) - haversine(a-b))/(m.sin(a)*m.sin(b)))
+    # # cosine theorem
+    # spherical_angle = m.acos((m.pow(c, 2) - m.pow(a, 2) - m.pow(b, 2))/(-2*a*b))
+
+    spherical_angle = inv_haversine((haversine(c) - haversine(a-b))/(m.sin(a)*m.sin(b)))
+
+    return spherical_angle
 
 def vector_angle(a, b):
 
-    return m.acos(np.dot(a, b)/(np.linalg.norm(a)*np.linalg.norm(b)))
+    vector_angle = m.acos(np.dot(a, b)/(np.linalg.norm(a)*np.linalg.norm(b)))
+
+    return vector_angle 
 
 def spherical_triangle_area(a, b, c):
 
@@ -28,12 +36,26 @@ def spherical_triangle_area(a, b, c):
     bc = vector_angle(b, c)
     ca = vector_angle(c, a)
 
-    # spherical angles
-    A = spherical_angle(ca, ab, bc)
-    B = spherical_angle(ab, bc, ca)
-    C = spherical_angle(bc, ca, ab)
-    
-    return A + B + C - m.pi
+    area = 0
+
+    # use the normal triangle area when the triangle is veeeery small
+    if ab < 1e-3 and bc < 1e-3 and ca < 1e-3:
+
+        p = (ab + bc + ca)/2.0
+            
+        area = m.sqrt(p*(p - ab)*(p - bc)*(p - ca))
+
+    # use the hoversine formula when the sphericallity could influance the result
+    else:
+
+        # spherical angles
+        A = spherical_angle(ca, ab, bc)
+        B = spherical_angle(ab, bc, ca)
+        C = spherical_angle(bc, ca, ab)
+        
+        area = A + B + C - m.pi
+
+    return area
 
 # a, b, c, d are the vertices of a quadrilateral in 3D, CCW or CW
 # z is the center of the field of view
