@@ -1,0 +1,3 @@
+rad_timer_dt: 0.01 # [ms]
+
+energy_granularity: 10 # [kev]

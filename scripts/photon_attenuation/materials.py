@@ -2,13 +2,6 @@ import constants
 
 class Element:
 
-    name = ""
-    density = 0
-    atomic_number = 0
-    molar_mass = 0
-    electron_density = 0
-    atomic_density = 0
-
     def __init__(self, name, density, atomic_number, molar_mass):
 
         self.name = name
@@ -20,16 +13,16 @@ class Element:
         self.electron_density = atoms_in_kg * atomic_number * density
         self.atomic_density = atoms_in_kg * density
 
-class Material:
+class RadiationSource:
 
-    name = ""
-    elements = []
-    element_quantities = []
-    density = 0
-    molar_mass = 0
-    electron_density = 0
-    molecular_density = 0
-    atomic_number = 0
+    def __init__(self, name, atomic_number, activity_per_gr, photon_energy):
+
+        self.name = name
+        self.atomic_number = atomic_number
+        self.activity_per_gr = activity_per_gr
+        self.photon_energy = photon_energy
+
+class Material:
 
     def __init__(self, name, elements, element_quantities, density, molar_mass):
 
@@ -48,6 +41,13 @@ Cd_element = Element("Cd", 8650.0, 48, 0.112411)
 Na_element = Element("Cd", 968.0, 11, 0.022989770)
 I_element = Element("I", 4933.0, 53, 0.253808940)
 Te_element = Element("Te", 5850.0, 52, 0.12760)
+
+radiation_sources = dict()
+
+Cs_137 = RadiationSource("Cs137", 137, 3.215e12, 661000)
+radiation_sources[Cs_137.name] = Cs_137
+Am241 = RadiationSource("Am241", 241, 127e9, 59000)
+radiation_sources[Am241.name] = Am241
 
 Si = Material("Si", [Si_element], [1], 2320.0, 0.02808550)
 Cd = Material("Cd", [Cd_element], [1], 8650.0, 0.112411)

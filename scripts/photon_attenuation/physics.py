@@ -22,18 +22,17 @@ def getComptonAngle(Ee, Ef):
     if Ef < 0:
         Ef = 0
 
+    E0 = Ee + Ef
+
     Ee_J = conversions.energy_ev_to_J(Ee)
     Ef_J = conversions.energy_ev_to_J(Ef)
+    E0_J = conversions.energy_ev_to_J(E0)
 
-    E0_J = Ee_J + Ef_J
-
-    # return m.acos(1.0 - constants.me*m.pow(constants.c, 2)*(Ef/(E0*E0))) # mine
     try:
-        angle = m.acos(1.0 - constants.me*m.pow(constants.c, 2)*(Ee_J/(E0_J*(E0_J-Ee_J)))) # Dan's
-    except:
-        print("Ee: {}".format(Ee))
-        print("Ef: {}".format(Ef))
-        pass
+        # angle = m.acos(1.0 - constants.me*m.pow(constants.c, 2.0)*(Ee_J/(E0_J*(E0_J-Ee_J)))) # Dan's
+        angle = m.acos(1.0 + constants.me*m.pow(constants.c, 2.0)*(1.0/E0_J - 1.0/Ef_J)) # mine
+    except Exception as e:
+        return m.pi
 
     return angle
 
@@ -180,11 +179,11 @@ def cs_interaction_depth(material, energy, thickness=0.01, depth_granularity=0.0
 
 # #{ cs_distribution_function()
 
-def cs_distribution_function(material, energy, granularity=0.001):
+def cs_distribution_function(material, energy, perc_granularity=0.001, angle_step=0.01):
 
     energy_J = conversions.energy_ev_to_J(energy)
 
-    angle_step = conversions.deg2rad(0.01) # [rad]
+    angle_step = conversions.deg2rad(angle_step) # [rad]
 
     prev = 0
 
@@ -217,8 +216,8 @@ def cs_distribution_function(material, energy, granularity=0.001):
 
     sigma_normalized_cumulative = [x/total for x in sigma_normalized_cumulative]
 
-    distribution = np.zeros((int(m.floor(1.0/granularity))))
-    indeces = np.zeros((int(m.floor(1.0/granularity))))
+    distribution = np.zeros((int(m.floor(1.0/perc_granularity))))
+    indeces = np.zeros((int(m.floor(1.0/perc_granularity))))
 
     n_steps = len(distribution)
 
@@ -226,7 +225,7 @@ def cs_distribution_function(material, energy, granularity=0.001):
 
         indeces[i] = (1.0/n_steps)*i
 
-        prob_lim = granularity*i
+        prob_lim = perc_granularity*i
 
         for index,prob in enumerate(sigma_normalized_cumulative):
 

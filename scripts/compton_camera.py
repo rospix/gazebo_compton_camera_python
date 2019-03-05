@@ -14,11 +14,6 @@ import math as m
 import numpy as np
 from pyquaternion import Quaternion
 
-# plotly
-import plotly.offline as py
-import plotly.graph_objs as go
-from scipy.spatial import Delaunay # for triangulation of the cones
-
 # my stuff
 import geometry.solid_angle
 import photon_attenuation.materials as materials
@@ -33,16 +28,26 @@ from gazebo_rad_msgs.msg import RadiationSource
 simulate_energy_noise = True
 simulate_pixel_uncertainty = True
 
+# #{ roundup()
+
+def roundup(x, to):
+
+    return int(m.ceil(x / to)) * to
+
+# #} end of roundup()
+
 # #{ class Source
 
 class Source:
 
-    def __init__(self, energy, activity, position):
+    def __init__(self, energy, activity, position, id):
 
         self.energy = energy
         self.activity = activity
         self.position = position
         self.aparent_activity = 0
+        self.last_update = rospy.Time.now()
+        self.id = id
 
 # #} end of class Source
 
@@ -187,9 +192,75 @@ class Detector:
 
 class ComptonCamera:
 
+    # #{ __init__()
+    
+    def __init__(self):
+
+        self.is_initialized = False
+    
+        rospy.init_node('compton_camera', anonymous=True)
+    
+        # define the source and the detector
+        # self.source = Source(10, 20, np.array([0.0, 0.0, 0.0]))
+        # self.source_distance = np.linalg.norm(self.source.position)
+        # self.source_point = self.source.position
+        self.detector_1 = Detector(materials.Si, 0.001, np.array([0, 0, 0]))
+        self.detector_2 = Detector(materials.CdTe, 0.002, np.array([-0.005, 0, 0]))
+    
+        # a = np.array([-0.1, 2.0*self.source.position[0], 1.0*self.source.position[2]])
+        # b = np.array([-0.1, -2.0*self.source.position[0], 1.0*self.source.position[2]])
+        # c = np.array([2.0*self.source.position[0], -2.0*self.source.position[0], 1.0*self.source.position[2]])
+        # d = np.array([2.0*self.source.position[0], 2.0*self.source.position[0], 1.0*self.source.position[2]])
+        # self.ground_polygon = Polygon3D([a, b, c, d])
+    
+        [self.a1, self.b1, self.c1, self.d1, e1, f1, g1, h1] = self.detector_1.getVertices()
+        [a2, b2, c2, d2, e2, f2, g2, h2] = self.detector_2.getVertices()
+    
+        # prepare the Compton scattering cross section and probability density for the source's energy
+        # TODO precompute all necessary
+        # self.cs_cross_section = physics.comptonCrossSection(physics.conversions.energy_ev_to_J(self.source.energy))
+        # self.cs_density_indeces, self.cs_density = physics.cs_distribution_function(self.detector_1.material, self.source.energy)
+
+        # parameters
+        self.rad_timer_dt = rospy.get_param('~rad_timer_dt')
+        self.energy_granularity = rospy.get_param('~energy_granularity')
+
+        self.cs_cross_sections = dict()
+        self.cs_densities = dict()
+
+        for i in range(10, 1000, self.energy_granularity):
+            rospy.loginfo('preparing CS crossection for {} kev'.format(i))
+            self.cs_cross_sections[i] = physics.comptonCrossSection(physics.conversions.energy_ev_to_J(i*1000.0))
+
+        for i in range(10, 1000, self.energy_granularity):
+            rospy.loginfo('preparing CS density for {} kev'.format(i))
+            cs_density_indeces, cs_density = physics.cs_distribution_function(self.detector_1.material, i*1000.0, 0.01, 0.1)
+            self.cs_densities[i] = cs_density
+    
+        # subscribers
+        rospy.Subscriber("~radiation_source_in", RadiationSource, self.callbackRadiationSource, queue_size=1)
+        rospy.Subscriber("~odometry_in", Odometry, self.callbackOdometry, queue_size=1)
+
+        self.got_radiation = False
+        self.got_odometry = False
+
+        self.rad_sources = []
+        self.rad_sources_ids = dict()
+    
+        # publishers
+        # self.publisher_image = rospy.Publisher("~labeled_out", Image, queue_size=1)
+    
+        rospy.Timer(rospy.Duration(self.rad_timer_dt), self.sourceTimer)
+
+        self.is_initialized = True
+    
+        rospy.spin()
+    
+    # #} end of __init__(self)
+
     # #{ comptonScattering()
     
-    def comptonScattering(from_point, to_point, energy, material, cs_cross_section, cs_density):
+    def comptonScattering(self, from_point, to_point, energy, material, cs_cross_section, cs_density):
     
         distance = np.linalg.norm(to_point - from_point)
     
@@ -240,8 +311,8 @@ class ComptonCamera:
             theta = 0.0
     
         # calculate the energy of the new photon
-        new_photon_energy = source.energy * physics.comptonRatio(physics.conversions.energy_ev_to_J(source.energy), theta)
-        electron_energy = source.energy - new_photon_energy
+        new_photon_energy = energy * physics.comptonRatio(physics.conversions.energy_ev_to_J(energy), theta)
+        electron_energy = energy - new_photon_energy
     
         new_ray = Ray(scattering_point, new_ray_point, new_photon_energy)
     
@@ -251,7 +322,7 @@ class ComptonCamera:
 
     # #{ sampleDetector()
     
-    def sampleDetector(detector):
+    def sampleDetector(self, detector):
     
         [a, b, c, d, e, f, g, h] = detector.getVertices()
     
@@ -267,21 +338,21 @@ class ComptonCamera:
 
     # #{ simulate()
     
-    def simulate():
+    def simulate(self, energy, source_point, cs_cross_section, cs_density):
     
-       point = sampleDetector(detector_1)
+       point = self.sampleDetector(self.detector_1)
     
-       ray = Ray(source_point, point, source.energy)
+       ray = Ray(source_point, point, energy)
     
        # intersection with the back side of the 1st detector
-       intersect1_second = detector_1.back.intersection(ray)
+       intersect1_second = self.detector_1.back.intersection(ray)
     
        # no collision with the back face
        if not isinstance(intersect1_second, np.ndarray):
            return
     
            # check intersection with the sides
-           for i,side in enumerate(detector_1.sides):
+           for i,side in enumerate(self.detector_1.sides):
     
                intersect1_second = side.intersection(ray)
     
@@ -289,7 +360,7 @@ class ComptonCamera:
                    break
     
        # if the ray came from the oposite direction, discard it
-       if np.linalg.norm(intersect1_second - source.position) < np.linalg.norm(point - source.position):
+       if np.linalg.norm(intersect1_second - source_point) < np.linalg.norm(point - source_point):
            return
     
        # if there is not a collission with any other facet of the detector
@@ -301,27 +372,27 @@ class ComptonCamera:
        intersection_len = np.linalg.norm(point - intersect1_second)
     
        # scatter the ray
-       scattered_ray, electron_energy, theta = comptonScattering(point, intersect1_second, source.energy, detector_1.material, cs_cross_section, cs_density)
+       scattered_ray, electron_energy, theta = self.comptonScattering(point, intersect1_second, energy, self.detector_1.material, cs_cross_section, cs_density)
     
        # if not scattering happened, just leave
        if not isinstance(scattered_ray, Ray):
            return
     
        # check the collision with the other detector's front side
-       intersect2_first = detector_2.front.intersection(scattered_ray)
+       intersect2_first = self.detector_2.front.intersection(scattered_ray)
     
        # if there is no intersection with the front face, just leave
        if not isinstance(intersect2_first, np.ndarray):
            return
     
        # check the collision with the other detector's back side
-       intersect2_second = detector_2.back.intersection(scattered_ray)
+       intersect2_second = self.detector_2.back.intersection(scattered_ray)
     
        # no collision with the back face
        if not isinstance(intersect2_second, np.ndarray):
     
            ## intersection with the sides
-           for i,side in enumerate(detector_2.sides):
+           for i,side in enumerate(self.detector_2.sides):
     
                intersect2_second = side.intersection(scattered_ray)
     
@@ -334,13 +405,13 @@ class ComptonCamera:
            return
     
        # calculate the photo-electric cross section for the scattered photon
-       pe_cross_section = [physics.pe_cs_gavrila_pratt_simplified(mat, scattered_ray.energy) for mat in detector_2.material.elements]
+       pe_cross_section = [physics.pe_cs_gavrila_pratt_simplified(mat, scattered_ray.energy) for mat in self.detector_2.material.elements]
        # and the effective thickness of the material for the PE effect
        pe_thickness = np.linalg.norm(intersect2_second - intersect2_first)
     
        prob_pe = 1.0
        for index,cross_section in enumerate(pe_cross_section):
-           prob_pe *= np.exp(-detector_2.material.element_quantities[index] * detector_2.material.molecular_density * cross_section * pe_thickness)
+           prob_pe *= np.exp(-self.detector_2.material.element_quantities[index] * self.detector_2.material.molecular_density * cross_section * pe_thickness)
        prob_pe = 1.0 - prob_pe
     
        # do a coin toss for the photo-electric effect
@@ -354,14 +425,14 @@ class ComptonCamera:
        print("Complete compton: p_energy: {}, absorber_thickness: {}, prob_pe: {}".format(scattered_ray.energy, pe_thickness, prob_pe))
     
        # calculate the scattering pixel 
-       x, y = detector_1.point2pixel(scattered_ray.rayPoint)
-       xs, ys, zs = detector_1.plotPixelVertices(x, y)
-       scatterer_mid_point = detector_1.getPixelMidPoint(x, y)
+       x, y = self.detector_1.point2pixel(scattered_ray.rayPoint)
+       xs, ys, zs = self.detector_1.plotPixelVertices(x, y)
+       scatterer_mid_point = self.detector_1.getPixelMidPoint(x, y)
     
        # calculate the absorbtion pixel 
-       x, y = detector_2.point2pixel(absorption_point)
-       xs, ys, zs = detector_2.plotPixelVertices(x, y)
-       absorber_mid_point = detector_2.getPixelMidPoint(x, y)
+       x, y = self.detector_2.point2pixel(absorption_point)
+       xs, ys, zs = self.detector_2.plotPixelVertices(x, y)
+       absorber_mid_point = self.detector_2.getPixelMidPoint(x, y)
     
        # #{ cone reconstruction
     
@@ -388,14 +459,12 @@ class ComptonCamera:
        # estimate the scattering angle theta
        theta_estimate = physics.getComptonAngle(electron_energy+e_noise, scattered_ray.energy+f_noise)
     
-       print("theta_estimate: {}".format(theta_estimate))
-    
        # swap the cone, if its angle is > 90 deg
        if theta_estimate > m.pi/2:
            theta_estimate = m.pi - theta_estimate
            cone_direction *= -1.0
-    
-       print("theta_estimate: {}".format(theta_estimate))
+
+       # print("theta_estimate vs original: {} vs {}".format(theta_estimate, theta))
     
        cone = Cone(cone_origin, cone_direction, theta_estimate)
     
@@ -403,79 +472,97 @@ class ComptonCamera:
     
     # #} end of simulate()
 
+    # #{ callbackRadiationSource()
+    
     def callbackRadiationSource(self, data):
+    
+        if not self.is_initialized:
+            return 
 
         rospy.loginfo_once('getting radiation')
-        self.radiation_source = data
         self.got_radiation = True
 
-        self.source.activity = self.radiation_source.activity
+        if data.id in self.rad_sources_ids:
 
+            idx = self.rad_sources_ids.get(data.id)
+            self.rad_sources[idx-1].position = np.array([data.x, data.y, data.z])
+            self.rad_sources[idx-1].last_update = rospy.Time.now()
+
+        else:
+
+            rospy.loginfo('registering new source with ID {}'.format(data.id))
+
+            if not data.material in materials.radiation_sources:
+                rospy.logerr('the material {} is not in the database of radiation sources'.format(data.material))
+            else:
+
+                new_source = Source(materials.radiation_sources[data.material].photon_energy, data.activity, np.array([data.x, data.y, data.z]), data.id)
+                self.rad_sources.append(new_source)
+                self.rad_sources_ids[data.id] = len(self.rad_sources)
+
+    # #} end of callbackRadiationSource()
+
+    # #{ callbackOdometry()
+    
     def callbackOdometry(self, data):
 
+        if not self.is_initialized:
+            return 
+    
         rospy.loginfo_once('getting odometry')
         self.odometry = data
         self.got_odometry = True
+    
+    # #} end of callbackOdometry()
 
+    # #{ sourceTimer()
+    
     def sourceTimer(self, event):
 
+        if not self.is_initialized:
+            return 
+    
         if not self.got_odometry or not self.got_radiation:
             rospy.loginfo_throttle(1.0, 'waiting for data')
             return
 
-        # transform the source the coordinates of the camera
-        source_camera_frame = np.array([self.radiation_source.x - self.odometry.pose.pose.position.x,
-                                        self.radiation_source.y - self.odometry.pose.pose.position.y,
-                                        self.radiation_source.z - self.odometry.pose.pose.position.z])
+        for source_idx,source in enumerate(self.rad_sources):
 
-        my_quaternion = Quaternion(self.odometry.pose.pose.orientation.w,
-                                   self.odometry.pose.pose.orientation.x,
-                                   self.odometry.pose.pose.orientation.y,
-                                   self.odometry.pose.pose.orientation.z)
-
-        self.source.position  = my_quaternion.rotate(source_camera_frame)
-
-        detector_solid_angle = geometry.solid_angle.quadrilateral_solid_angle(self.a1, self.b1, self.c1, self.d1, self.source.position)
-        self.aparent_activity = self.source.activity*(detector_solid_angle/(4*m.pi))
-        print("aparent_activity: {}".format(self.aparent_activity))
-
-    def __init__(self):
-
-        rospy.init_node('compton_camera', anonymous=True)
-
-        # define the source and the detector
-        self.source = Source(10, 20, np.array([0.0, 0.0, 0.0]))
-        self.source_distance = np.linalg.norm(self.source.position)
-        self.source_point = self.source.position
-        self.detector_1 = Detector(materials.Si, 0.001, np.array([0, 0, 0]))
-        self.detector_2 = Detector(materials.CdTe, 0.002, np.array([-0.005, 0, 0]))
+            if (rospy.Time.now() - source.last_update).to_sec() > 1.0:
+                continue
+    
+            # transform the source the coordinates of the camera
+            source_camera_frame = np.array([source.position[0] - self.odometry.pose.pose.position.x,
+                                            source.position[1] - self.odometry.pose.pose.position.y,
+                                            source.position[2] - self.odometry.pose.pose.position.z])
         
-        # a = np.array([-0.1, 2.0*self.source.position[0], 1.0*self.source.position[2]])
-        # b = np.array([-0.1, -2.0*self.source.position[0], 1.0*self.source.position[2]])
-        # c = np.array([2.0*self.source.position[0], -2.0*self.source.position[0], 1.0*self.source.position[2]])
-        # d = np.array([2.0*self.source.position[0], 2.0*self.source.position[0], 1.0*self.source.position[2]])
-        # self.ground_polygon = Polygon3D([a, b, c, d])
+            my_quaternion = Quaternion(self.odometry.pose.pose.orientation.w,
+                                       self.odometry.pose.pose.orientation.x,
+                                       self.odometry.pose.pose.orientation.y,
+                                       self.odometry.pose.pose.orientation.z)
         
-        [self.a1, self.b1, self.c1, self.d1, e1, f1, g1, h1] = self.detector_1.getVertices()
-        [a2, b2, c2, d2, e2, f2, g2, h2] = self.detector_2.getVertices()
+            source_position_in_local  = my_quaternion.rotate(source_camera_frame)
         
-        # prepare the Compton scattering cross section and probability density for the source's energy
-        self.cs_cross_section = physics.comptonCrossSection(physics.conversions.energy_ev_to_J(self.source.energy))
-        self.cs_density_indeces, cs_density = physics.cs_distribution_function(self.detector_1.material, self.source.energy)
+            detector_solid_angle = geometry.solid_angle.quadrilateral_solid_angle(self.a1, self.b1, self.c1, self.d1, source_position_in_local)
+            aparent_activity = source.activity*(detector_solid_angle/(4*m.pi))
 
-        # parameters
-        # self.pipeline_file = rospy.get_param('~pipeline_path', '/')
+            # simulate n particles
+            time_start = rospy.Time.now()
 
-        # subscribers
-        rospy.Subscriber("~radiation_source_in", RadiationSource, self.callbackRadiationSource, queue_size=1)
-        rospy.Subscriber("~odometry_in", Odometry, self.callbackOdometry, queue_size=1)
+            n_particles = int(aparent_activity*self.rad_timer_dt)
 
-        # publishers
-        # self.publisher_image = rospy.Publisher("~labeled_out", Image, queue_size=1)
+            energy_roundedup = roundup(source.energy/1000.0, float(self.energy_granularity))
+            cs_cross_section = self.cs_cross_sections[energy_roundedup]
+            cs_density = self.cs_densities[energy_roundedup]
 
-        rospy.Timer(rospy.Duration(0.1), self.sourceTimer)
+            for i in range(0, n_particles):
+                self.simulate(source.energy, source_position_in_local, cs_cross_section, cs_density)
 
-        rospy.spin()
+            duration = (rospy.Time.now() - time_start).to_sec()
+
+            rospy.loginfo_throttle(1.0, "aparent_activity of the source {} is {} ({}), duration={} s".format(source.id, aparent_activity, n_particles, duration))
+    
+    # #} end of callbackOdometry()
 
 if __name__ == '__main__':
     try:
