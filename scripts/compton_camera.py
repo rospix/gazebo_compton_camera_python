@@ -20,7 +20,7 @@ import photon_attenuation.materials as materials
 import photon_attenuation.physics as physics
 from geometry.raytracing import Plane, Ray
 from geometry.cone import Cone
-from geometry.polygon3d import Polygon3D
+from geometry.rectangle3d import Rectangle3D
 
 from nav_msgs.msg import Odometry
 from gazebo_rad_msgs.msg import RadiationSource
@@ -71,24 +71,24 @@ class Detector:
         # FRONT
 
         # give me the 4 front_vertices of the detector
-        a = np.array([self.thickness/2, -self.size/2.0, self.size/2.0]) + position
-        b = np.array([self.thickness/2, self.size/2.0, self.size/2.0]) + position
-        c = np.array([self.thickness/2, self.size/2.0, -self.size/2.0]) + position
-        d = np.array([self.thickness/2, -self.size/2.0, -self.size/2.0]) + position
+        self.a = np.array([self.thickness/2, -self.size/2.0, self.size/2.0]) + position
+        self.b = np.array([self.thickness/2, self.size/2.0, self.size/2.0]) + position
+        self.c = np.array([self.thickness/2, self.size/2.0, -self.size/2.0]) + position
+        self.d = np.array([self.thickness/2, -self.size/2.0, -self.size/2.0]) + position
 
         # create the sympy front plane
-        self.front = Polygon3D([a, b, c, d])
+        self.front = Rectangle3D([self.a, self.b, self.c, self.d])
 
         # BACK
 
         # give me the 4 back_vertices of the detector
-        e = np.array([-self.thickness/2, -self.size/2.0, self.size/2.0]) + position
-        f = np.array([-self.thickness/2, self.size/2.0, self.size/2.0]) + position
-        g = np.array([-self.thickness/2, self.size/2.0, -self.size/2.0]) + position
-        h = np.array([-self.thickness/2, -self.size/2.0, -self.size/2.0]) + position
+        self.e = np.array([-self.thickness/2, -self.size/2.0, self.size/2.0]) + position
+        self.f = np.array([-self.thickness/2, self.size/2.0, self.size/2.0]) + position
+        self.g = np.array([-self.thickness/2, self.size/2.0, -self.size/2.0]) + position
+        self.h = np.array([-self.thickness/2, -self.size/2.0, -self.size/2.0]) + position
 
         # create the sympy back plane
-        self.back = Polygon3D([e, f, g, h])
+        self.back = Rectangle3D([self.e, self.f, self.g, self.h])
 
         # orthogonal basis of the detector
         self.b1 = np.array([0, self.size/2.0 - (-self.size/2.0), self.size/2.0 - self.size/2.0])
@@ -97,24 +97,22 @@ class Detector:
         # SIDES
 
         # create the sympy side planes
-        self.sides.append(Polygon3D([a, e, h, d]))
-        self.sides.append(Polygon3D([b, f, e, a]))
-        self.sides.append(Polygon3D([c, g, f, b]))
-        self.sides.append(Polygon3D([d, h, c, g]))
+        self.sides.append(Rectangle3D([self.a, self.e, self.h, self.d]))
+        self.sides.append(Rectangle3D([self.b, self.f, self.e, self.a]))
+        self.sides.append(Rectangle3D([self.c, self.g, self.f, self.b]))
+        self.sides.append(Rectangle3D([self.d, self.h, self.c, self.g]))
 
-        self.sides[0].polygon_2d = self.sides[0].polygon_2d.buffer(0.002)
-        self.sides[1].polygon_2d = self.sides[1].polygon_2d.buffer(0.002)
-        self.sides[2].polygon_2d = self.sides[2].polygon_2d.buffer(0.002)
-        self.sides[3].polygon_2d = self.sides[3].polygon_2d.buffer(0.002)
+        self.vertices.append(self.a)
+        self.vertices.append(self.b)
+        self.vertices.append(self.c)
+        self.vertices.append(self.d)
+        self.vertices.append(self.e)
+        self.vertices.append(self.f)
+        self.vertices.append(self.g)
+        self.vertices.append(self.h)
 
-        self.vertices.append(a)
-        self.vertices.append(b)
-        self.vertices.append(c)
-        self.vertices.append(d)
-        self.vertices.append(e)
-        self.vertices.append(f)
-        self.vertices.append(g)
-        self.vertices.append(h)
+        self.ab = self.b-self.a
+        self.ad = self.d-self.a
 
     def getVertices(self):
 
@@ -211,7 +209,7 @@ class ComptonCamera:
         # b = np.array([-0.1, -2.0*self.source.position[0], 1.0*self.source.position[2]])
         # c = np.array([2.0*self.source.position[0], -2.0*self.source.position[0], 1.0*self.source.position[2]])
         # d = np.array([2.0*self.source.position[0], 2.0*self.source.position[0], 1.0*self.source.position[2]])
-        # self.ground_polygon = Polygon3D([a, b, c, d])
+        # self.ground_polygon = Rectangle3D([a, b, c, d])
     
         [self.a1, self.b1, self.c1, self.d1, e1, f1, g1, h1] = self.detector_1.getVertices()
         [a2, b2, c2, d2, e2, f2, g2, h2] = self.detector_2.getVertices()
@@ -324,24 +322,19 @@ class ComptonCamera:
     
     def sampleDetector(self, detector):
     
-        [a, b, c, d, e, f, g, h] = detector.getVertices()
-    
-        ab = b-a
-        ad = d-a
-    
         k1 = random.uniform(1e-2, 1.0-1e-2)
         k2 = random.uniform(1e-2, 1.0-1e-2)
-    
-        return a + ab*k1 + ad*k2
+
+        return detector.a + detector.ab*k1 + detector.ad*k2
     
     # #} end of sampleDetector()
 
     # #{ simulate()
     
     def simulate(self, energy, source_point, cs_cross_section, cs_density):
-    
+
        point = self.sampleDetector(self.detector_1)
-    
+
        ray = Ray(source_point, point, energy)
     
        # intersection with the back side of the 1st detector
@@ -546,21 +539,21 @@ class ComptonCamera:
             detector_solid_angle = geometry.solid_angle.quadrilateral_solid_angle(self.a1, self.b1, self.c1, self.d1, source_position_in_local)
             aparent_activity = source.activity*(detector_solid_angle/(4*m.pi))
 
-            # simulate n particles
-            time_start = rospy.Time.now()
-
             n_particles = int(aparent_activity*self.rad_timer_dt)
 
             energy_roundedup = roundup(source.energy/1000.0, float(self.energy_granularity))
             cs_cross_section = self.cs_cross_sections[energy_roundedup]
             cs_density = self.cs_densities[energy_roundedup]
 
+            # simulate n particles
+            time_start = rospy.Time.now()
+
             for i in range(0, n_particles):
                 self.simulate(source.energy, source_position_in_local, cs_cross_section, cs_density)
 
             duration = (rospy.Time.now() - time_start).to_sec()
 
-            rospy.loginfo_throttle(1.0, "aparent_activity of the source {} is {} ({}), duration={} s".format(source.id, aparent_activity, n_particles, duration))
+            # rospy.loginfo("aparent_activity of the source {} is {} ({}), duration={} s".format(source.id, aparent_activity, n_particles, duration))
     
     # #} end of callbackOdometry()
 

@@ -16,13 +16,12 @@ class Plane:
         if abs(denom) < epsilon:
             return False
 
-        p0l0 = self.planePoint - ray.rayPoint
-        t = self.planeNormal.dot(p0l0) / denom
+        t = self.planeNormal.dot(self.planePoint - ray.rayPoint) / denom
 
         if t >= 0:
-            return t * ray.rayDirection + ray.rayPoint
+            return True, t * ray.rayDirection + ray.rayPoint
         else:
-            return False
+            return False, 0
 
 class Ray:
 
