@@ -1,0 +1,18 @@
+<launch>
+
+  <arg name="uav_name" default="$(optenv UAV_NAME uav)"/>
+
+  <group ns="$(arg uav_name)">
+
+    <node pkg="nodelet" type="nodelet" name="cone_plotter" args="standalone compton_camera_python/ConePlotter" output="screen">
+
+      <rosparam file="$(find compton_camera_python)/config/plotter.yaml" command="load" />
+
+      <!-- subscribed topics -->
+      <remap from="~cone_in" to="compton_camera/cone" />
+
+    </node>
+
+  </group>
+
+</launch>

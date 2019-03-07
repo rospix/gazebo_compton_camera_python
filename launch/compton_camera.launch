@@ -4,13 +4,16 @@
 
   <group ns="$(arg uav_name)">
 
-    <node name="compton_camera" pkg="compton_camera_python" type="compton_camera.py" output="screen" respawn="true">
+    <node name="compton_camera" pkg="compton_camera_python" type="compton_camera.py" output="screen">
 
       <rosparam file="$(find compton_camera_python)/config/compton_camera.yaml" command="load" />
 
       <!-- subscribed topics -->
       <remap from="~radiation_source_in" to="/gazebo/radiation" />
       <remap from="~odometry_in" to="odometry/odom_main" />
+
+      <!-- advertised topics -->
+      <remap from="~cone_out" to="~cone" />
 
     </node>
 

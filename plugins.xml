@@ -1,0 +1,5 @@
+<library path="lib/libConePlotter">
+  <class name="compton_camera_python/ConePlotter" type="compton_camera_python::ConePlotter" base_class_type="nodelet::Nodelet">
+    <description>ConePlotter nodelet</description>
+  </class>
+</library>

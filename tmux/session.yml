@@ -1,0 +1,48 @@
+name: simulation
+root: ./
+
+startup_window: compton_camera
+pre_window: export UAV_NAME=uav1
+windows:
+  - roscore:
+      layout: even-vertical
+      panes:
+        - roscore
+  - gazebo:
+      layout: even-vertical
+      panes:
+        - waitForRos; roslaunch compton_camera_python simulation.launch gui:=true
+  - rviz:
+      layout: even-vertical
+      panes:
+        - waitForRos; roslaunch compton_camera_python rviz.launch
+  - compton_camera:
+      layout: even-vertical
+      panes:
+        - waitForRos; roslaunch compton_camera_python compton_camera.launch
+        - waitForRos; roslaunch compton_camera_python cone_plotter.launch
+  - spawn:
+      layout: even-vertical
+      panes:
+        - waitForSimulation; spawn 1 --run --delete --enable-rangefinder --enable-ground-truth
+  - control:
+      layout: even-vertical
+      panes:
+        - waitForOdometry; roslaunch mrs_uav_manager simulation_f550_gps.launch
+  - takeoff:
+      layout: even-vertical
+      panes:
+        #{ uav1
+        - 'waitForControl;
+          rosservice call /$UAV_NAME/mavros/cmd/arming 1;
+          rosservice call /$UAV_NAME/mavros/set_mode 0 offboard;
+          rosservice call /$UAV_NAME/control_manager/motors 1;
+          rosservice call /$UAV_NAME/uav_manager/takeoff;
+          sleep 5;
+          rosservice call /$UAV_NAME/control_manager/goto "goal: [0, 0, 1.5, 0]"'
+        #}
+  - gazebo_camera_follow:
+      layout: even-vertical
+      panes:
+        - waitForOdometry; gz camera -c gzclient_camera -f uav1; history -s gz camera -c gzclient_camera -f uav1
+        - waitForOdometry; ~/.i3/layout_manager.sh radiation

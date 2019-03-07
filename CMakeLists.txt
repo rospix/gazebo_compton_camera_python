@@ -6,6 +6,11 @@ project(compton_camera_python)
 
 set(CMAKE_CXX_FLAGS "-std=c++17 -fno-diagnostics-color")
 
+# include Eigen3
+find_package(Eigen3 REQUIRED)
+set(Eigen_INCLUDE_DIRS ${EIGEN3_INCLUDE_DIRS})
+set(Eigen_LIBRARIES ${Eigen_LIBRARIES})
+
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
@@ -17,15 +22,35 @@ find_package(catkin REQUIRED COMPONENTS
   sensor_msgs
   nodelet
   cmake_modules
+  gazebo_rad_msgs
+  rviz_visual_tools
 )
 
 catkin_package(
 #  INCLUDE_DIRS include
 #  LIBRARIES gdax_interface
-   CATKIN_DEPENDS nodelet rospy std_msgs message_runtime
+   CATKIN_DEPENDS nodelet rospy std_msgs message_runtime gazebo_rad_msgs rviz_visual_tools
+   LIBRARIES ConePlotter
+   DEPENDS Eigen
 )
 
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
 # include_directories(include)
-include_directories(${catkin_INCLUDE_DIRS})
+include_directories(
+  ${catkin_INCLUDE_DIRS}
+  ${Eigen_INCLUDE_DIRS}
+  )
+
+add_library(ConePlotter src/cone_plotter.cpp)
+
+add_dependencies(ConePlotter
+  ${${PROJECT_NAME}_EXPORTED_TARGETS}
+  ${catkin_EXPORTED_TARGETS}
+  )
+
+## Specify libraries to link a library or executable target against
+target_link_libraries(ConePlotter
+  ${catkin_LIBRARIES}
+  ${Eigen_LIBRARIES}
+  )
