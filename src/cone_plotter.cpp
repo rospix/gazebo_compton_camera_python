@@ -64,6 +64,7 @@ namespace compton_camera_python
     void            callbackCone(const gazebo_rad_msgs::ConeConstPtr &msg);
     int             max_cones_;
     double          cone_length_;
+    double          source_size_;
 
     std::list<Cone> cones;
     std::mutex      mutex_cones;
@@ -95,6 +96,7 @@ namespace compton_camera_python
     nh_.getParam("max_cones", max_cones_);
     nh_.getParam("cone_length", cone_length_);
     nh_.getParam("main_timer_rate", main_timer_rate_);
+    nh_.getParam("source_size", source_size_);
 
     // --------------------------------------------------------------
     // |                         subscribers                        |
@@ -221,9 +223,27 @@ namespace compton_camera_python
 
       std::map<int, RadiationSource>::iterator it;
       for (it = sources.begin(); it != sources.end(); it++) {
-        visualization_msgs::Marker new_marker;
 
-        new_marker.type = visualization_msgs::Marker::CUBE;
+        if ((ros::Time::now() - it->second.last_update).toSec() > 1.0) {
+         
+          ROS_INFO("[ConePlotter]: removing source %d", it->first);
+          sources.erase(it);
+          continue;
+        }
+
+        double size = source_size_/2.0;
+
+        Eigen::Isometry3d pose1 = Eigen::Isometry3d::Identity();
+        pose1.translation().x() = it->second.source_msg.x - size;
+        pose1.translation().y() = it->second.source_msg.y - size;
+        pose1.translation().z() = it->second.source_msg.z - size;
+
+        Eigen::Isometry3d pose2 = Eigen::Isometry3d::Identity();
+        pose2.translation().x() = it->second.source_msg.x + size;
+        pose2.translation().y() = it->second.source_msg.y + size;
+        pose2.translation().z() = it->second.source_msg.z + size;
+
+        visual_tools_->publishCuboid(pose1.translation(), pose2.translation(), rviz_visual_tools::colors::BLUE);
       }
     }
 
