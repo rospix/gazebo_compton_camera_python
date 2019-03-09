@@ -94,30 +94,6 @@
       </link>
     </model>
 
-    <model name="cs137">
-      <static>1</static>
-      <link name="link">
-        <pose>10 10 0.1 0 0 0</pose>
-
-        <visual name="visual">
-          <geometry>
-            <box>
-              <size>0.2 0.2 0.2</size>
-            </box>
-          </geometry>
-        </visual>
-
-      </link>
-
-      <plugin name="cs137" filename="libgazebo_rad_source.so">
-
-        <material>Cs137</material>
-        <activity>100e9</activity>
-
-      </plugin>
-
-    </model>
-
     <gui>
       <camera name="camera">
         <pose>-20 0 20 0 0.6 0.89</pose>

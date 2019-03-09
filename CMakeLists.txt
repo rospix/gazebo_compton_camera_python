@@ -24,12 +24,13 @@ find_package(catkin REQUIRED COMPONENTS
   cmake_modules
   gazebo_rad_msgs
   rviz_visual_tools
+  visualization_msgs
 )
 
 catkin_package(
 #  INCLUDE_DIRS include
 #  LIBRARIES gdax_interface
-   CATKIN_DEPENDS nodelet rospy std_msgs message_runtime gazebo_rad_msgs rviz_visual_tools
+   CATKIN_DEPENDS nodelet rospy std_msgs message_runtime gazebo_rad_msgs rviz_visual_tools visualization_msgs
    LIBRARIES ConePlotter
    DEPENDS Eigen
 )

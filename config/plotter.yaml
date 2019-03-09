@@ -1,2 +1,3 @@
 max_cones: 10 # []
 cone_length: 50 # [m]
+main_timer_rate: 5.0 # [m]
