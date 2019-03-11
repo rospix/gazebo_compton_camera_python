@@ -14,7 +14,7 @@ class Plane:
 
         denom = self.planeNormal.dot(ray.rayDirection)
         if abs(denom) < epsilon:
-            return False
+            return False, 0
 
         t = self.planeNormal.dot(self.planePoint - ray.rayPoint) / denom
 

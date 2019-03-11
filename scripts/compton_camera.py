@@ -27,8 +27,8 @@ from gazebo_rad_msgs.msg import RadiationSource
 
 from gazebo_rad_msgs.msg import Cone as ConeMsg
 
-simulate_energy_noise = False
-simulate_pixel_uncertainty = False
+simulate_energy_noise = True
+simulate_pixel_uncertainty = True
 
 # #{ roundup()
 
