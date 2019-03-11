@@ -560,7 +560,7 @@ class ComptonCamera:
         
             source_position_in_local = self.quaternion_w2d.rotate(source_camera_frame)
 
-            rospy.loginfo_throttle(1.0, 'Source in FCU: {} {} {}'.format(source_position_in_local[0], source_position_in_local[1], source_position_in_local[2]))
+            # rospy.loginfo_throttle(1.0, 'Source in FCU: {} {} {}'.format(source_position_in_local[0], source_position_in_local[1], source_position_in_local[2]))
         
             detector_solid_angle = geometry.solid_angle.quadrilateral_solid_angle(self.a1, self.b1, self.c1, self.d1, source_position_in_local)
             aparent_activity = source.activity*(detector_solid_angle/(4*m.pi))
@@ -579,7 +579,7 @@ class ComptonCamera:
 
             duration = (rospy.Time.now() - time_start).to_sec()
 
-            # rospy.loginfo('[ComptonCamera]: aparent_activity of the source {} is {} ({}), duration={} s'.format(source.id, aparent_activity, n_particles, duration))
+            rospy.loginfo('[ComptonCamera]: aparent_activity of the source {} is {} ({}), duration={} s'.format(source.id, aparent_activity, n_particles, duration))
     
     # #} end of callbackOdometry()
 

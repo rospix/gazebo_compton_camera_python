@@ -10,6 +10,8 @@
 #include <Eigen/Eigen>
 #include <mutex>
 
+#include <mrs_lib/ParamLoader.h>
+
 namespace compton_camera_python
 {
 
@@ -44,8 +46,8 @@ namespace compton_camera_python
 
   //}
 
-  /* ConePlotter //{ */
-  class ConePlotter : public nodelet::Nodelet {
+  /* ComptonPlotter //{ */
+  class ComptonPlotter : public nodelet::Nodelet {
 
   public:
     virtual void onInit();
@@ -85,25 +87,27 @@ namespace compton_camera_python
 
   /* inInit() //{ */
 
-  void ConePlotter::onInit() {
+  void ComptonPlotter::onInit() {
 
     ros::NodeHandle nh_ = nodelet::Nodelet::getMTPrivateNodeHandle();
 
-    ROS_INFO("[ConePlotter]: initializing");
+    ROS_INFO("[ComptonPlotter]: initializing");
 
     ros::Time::waitForValid();
 
-    nh_.getParam("max_cones", max_cones_);
-    nh_.getParam("cone_length", cone_length_);
-    nh_.getParam("main_timer_rate", main_timer_rate_);
-    nh_.getParam("source_size", source_size_);
+    mrs_lib::ParamLoader param_loader(nh_, "ComptonPlotter");
+
+    param_loader.load_param("max_cones", max_cones_);
+    param_loader.load_param("cone_length", cone_length_);
+    param_loader.load_param("main_timer_rate", main_timer_rate_);
+    param_loader.load_param("source_size", source_size_);
 
     // --------------------------------------------------------------
     // |                         subscribers                        |
     // --------------------------------------------------------------
 
-    subscriber_cone   = nh_.subscribe("cone_in", 1, &ConePlotter::callbackCone, this, ros::TransportHints().tcpNoDelay());
-    subscriber_source = nh_.subscribe("source_in", 1, &ConePlotter::callbackSource, this, ros::TransportHints().tcpNoDelay());
+    subscriber_cone   = nh_.subscribe("cone_in", 1, &ComptonPlotter::callbackCone, this, ros::TransportHints().tcpNoDelay());
+    subscriber_source = nh_.subscribe("source_in", 1, &ComptonPlotter::callbackSource, this, ros::TransportHints().tcpNoDelay());
 
     // --------------------------------------------------------------
     // |                         publishers                         |
@@ -126,13 +130,18 @@ namespace compton_camera_python
     // |                           timers                           |
     // --------------------------------------------------------------
 
-    main_timer = nh_.createTimer(ros::Rate(main_timer_rate_), &ConePlotter::mainTimer, this);
+    main_timer = nh_.createTimer(ros::Rate(main_timer_rate_), &ComptonPlotter::mainTimer, this);
 
     // | ----------------------- finish init ---------------------- |
 
+    if (!param_loader.loaded_successfully()) {
+      ROS_ERROR("[ComptonPlotter]: Could not load all parameters!");
+      ros::shutdown();
+    }
+
     is_initialized = true;
 
-    ROS_INFO("[ConePlotter]: initialized");
+    ROS_INFO("[ComptonPlotter]: initialized");
   }
 
   //}
@@ -143,14 +152,14 @@ namespace compton_camera_python
 
   /* callbackCone() //{ */
 
-  void ConePlotter::callbackCone(const gazebo_rad_msgs::ConeConstPtr &msg) {
+  void ComptonPlotter::callbackCone(const gazebo_rad_msgs::ConeConstPtr &msg) {
 
     if (!is_initialized)
       return;
 
     std::scoped_lock lock(mutex_cones);
 
-    ROS_INFO("[ConePlotter]: got a cone!");
+    ROS_INFO("[ComptonPlotter]: got a cone!");
 
     Eigen::Isometry3d pose1 = Eigen::Isometry3d::Identity();
     pose1.translation().x() = msg->pose.position.x;
@@ -173,7 +182,7 @@ namespace compton_camera_python
 
   /* callbackSource() //{ */
 
-  void ConePlotter::callbackSource(const gazebo_rad_msgs::RadiationSourceConstPtr &msg) {
+  void ComptonPlotter::callbackSource(const gazebo_rad_msgs::RadiationSourceConstPtr &msg) {
 
     if (!is_initialized)
       return;
@@ -189,7 +198,7 @@ namespace compton_camera_python
 
       sources.insert(std::pair<int, RadiationSource>(msg->id, new_source));
 
-      ROS_INFO("[ConePlotter]: registering new source [%d]", msg->id);
+      ROS_INFO("[ComptonPlotter]: registering new source [%d]", msg->id);
 
     } else {
 
@@ -202,13 +211,14 @@ namespace compton_camera_python
 
   /* mainTimer() //{ */
 
-  void ConePlotter::mainTimer([[maybe_unused]] const ros::TimerEvent &event) {
+  void ComptonPlotter::mainTimer([[maybe_unused]] const ros::TimerEvent &event) {
 
     if (!is_initialized)
       return;
 
     visual_tools_->deleteAllMarkers();
 
+    // plot the cones
     {
       std::scoped_lock lock(mutex_cones);
 
@@ -218,6 +228,7 @@ namespace compton_camera_python
       }
     }
 
+    // plot the radiation sources
     {
       std::scoped_lock lock(mutex_sources);
 
@@ -226,7 +237,7 @@ namespace compton_camera_python
 
         if ((ros::Time::now() - it->second.last_update).toSec() > 1.0) {
          
-          ROS_INFO("[ConePlotter]: removing source %d", it->first);
+          ROS_INFO("[ComptonPlotter]: removing source %d", it->first);
           sources.erase(it);
           continue;
         }
@@ -255,4 +266,4 @@ namespace compton_camera_python
 }  // namespace compton_camera_python
 
 #include <pluginlib/class_list_macros.h>
-PLUGINLIB_EXPORT_CLASS(compton_camera_python::ConePlotter, nodelet::Nodelet)
+PLUGINLIB_EXPORT_CLASS(compton_camera_python::ComptonPlotter, nodelet::Nodelet)

@@ -25,13 +25,14 @@ find_package(catkin REQUIRED COMPONENTS
   gazebo_rad_msgs
   rviz_visual_tools
   visualization_msgs
+  mrs_lib
 )
 
 catkin_package(
 #  INCLUDE_DIRS include
 #  LIBRARIES gdax_interface
-   CATKIN_DEPENDS nodelet rospy std_msgs message_runtime gazebo_rad_msgs rviz_visual_tools visualization_msgs
-   LIBRARIES ConePlotter
+   CATKIN_DEPENDS nodelet rospy std_msgs message_runtime gazebo_rad_msgs rviz_visual_tools visualization_msgs mrs_lib
+   LIBRARIES ComptonPlotter
    DEPENDS Eigen
 )
 
@@ -43,15 +44,15 @@ include_directories(
   ${Eigen_INCLUDE_DIRS}
   )
 
-add_library(ConePlotter src/cone_plotter.cpp)
+add_library(ComptonPlotter src/compton_plotter.cpp)
 
-add_dependencies(ConePlotter
+add_dependencies(ComptonPlotter
   ${${PROJECT_NAME}_EXPORTED_TARGETS}
   ${catkin_EXPORTED_TARGETS}
   )
 
 ## Specify libraries to link a library or executable target against
-target_link_libraries(ConePlotter
+target_link_libraries(ComptonPlotter
   ${catkin_LIBRARIES}
   ${Eigen_LIBRARIES}
   )

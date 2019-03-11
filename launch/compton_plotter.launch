@@ -4,7 +4,7 @@
 
   <group ns="$(arg uav_name)">
 
-    <node pkg="nodelet" type="nodelet" name="cone_plotter" args="standalone compton_camera_python/ConePlotter" output="screen">
+    <node pkg="nodelet" type="nodelet" name="compton_plotter" args="standalone compton_camera_python/ComptonPlotter" output="screen">
 
       <rosparam file="$(find compton_camera_python)/config/plotter.yaml" command="load" />
 

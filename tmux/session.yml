@@ -20,7 +20,11 @@ windows:
       layout: even-vertical
       panes:
         - waitForRos; roslaunch compton_camera_python compton_camera.launch
-        - waitForRos; roslaunch compton_camera_python cone_plotter.launch
+        - waitForRos; roslaunch compton_camera_filter compton_filter.launch
+  - plotter:
+      layout: even-vertical
+      panes:
+        - waitForRos; roslaunch compton_camera_python compton_plotter.launch
   - spawn:
       layout: even-vertical
       panes:
