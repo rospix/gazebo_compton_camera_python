@@ -27,8 +27,11 @@ from gazebo_rad_msgs.msg import RadiationSource
 
 from gazebo_rad_msgs.msg import Cone as ConeMsg
 
-simulate_energy_noise = False
-simulate_pixel_uncertainty = False
+simulate_energy_noise = True
+simulate_pixel_uncertainty = True
+
+# simulate_energy_noise = False
+# simulate_pixel_uncertainty = False
 
 # #{ roundup()
 
@@ -576,6 +579,10 @@ class ComptonCamera:
 
             for i in range(0, n_particles):
                 self.simulate(source.energy, source_position_in_local, cs_cross_section, cs_density)
+
+                duration = (rospy.Time.now() - time_start).to_sec()
+                if duration > 0.01/len(self.rad_sources):
+                    break
 
             duration = (rospy.Time.now() - time_start).to_sec()
 
