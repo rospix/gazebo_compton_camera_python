@@ -1,7 +1,7 @@
 name: simulation
 root: ./
 
-startup_window: cone_fitter
+startup_window: optimizer
 pre_window: export UAV_NAME=uav1
 windows:
   - roscore:
@@ -29,14 +29,14 @@ windows:
       panes:
         - waitForRos; roslaunch compton_camera_python compton_camera.launch
         - waitForRos; roslaunch compton_camera_filter compton_filter.launch
-  - cone_fitter:
+  - optimizer:
       layout: even-vertical
       panes:
-        - waitForRos; roslaunch compton_camera_filter cone_fitter.launch
+        - waitForRos; roslaunch compton_camera_filter optimizer.launch
   - goto:
       layout: even-vertical
       panes:
-        - 'waitForRos; while true; do rosservice call /uav1/control_manager/goto "goal: [0, -30, 1.5, 0.0]"; sleep 20; rosservice call /uav1/control_manager/goto "goal: [0, 30, 1.5, 0.0]"; sleep 20; done'
+        - 'waitForRos; read; while true; do rosservice call /uav1/control_manager/goto "goal: [0, -30, 1.5, 0.0]"; sleep 20; rosservice call /uav1/control_manager/goto "goal: [0, 30, 1.5, 0.0]"; sleep 20; done'
   - plotter:
       layout: even-vertical
       panes:
