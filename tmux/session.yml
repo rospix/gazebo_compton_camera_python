@@ -1,7 +1,7 @@
 name: simulation
 root: ./
 
-startup_window: compton_camera
+startup_window: cone_fitter
 pre_window: export UAV_NAME=uav1
 windows:
   - roscore:
@@ -16,15 +16,6 @@ windows:
       layout: even-vertical
       panes:
         - waitForRos; roslaunch compton_camera_python rviz.launch
-  - compton_camera:
-      layout: even-vertical
-      panes:
-        - waitForRos; roslaunch compton_camera_python compton_camera.launch
-        - waitForRos; roslaunch compton_camera_filter compton_filter.launch
-  - plotter:
-      layout: even-vertical
-      panes:
-        - waitForRos; roslaunch compton_camera_python compton_plotter.launch
   - spawn:
       layout: even-vertical
       panes:
@@ -33,6 +24,23 @@ windows:
       layout: even-vertical
       panes:
         - waitForOdometry; roslaunch mrs_uav_manager simulation_f550_gps.launch
+  - compton_camera:
+      layout: even-vertical
+      panes:
+        - waitForRos; roslaunch compton_camera_python compton_camera.launch
+        - waitForRos; roslaunch compton_camera_filter compton_filter.launch
+  - cone_fitter:
+      layout: even-vertical
+      panes:
+        - waitForRos; roslaunch compton_camera_filter cone_fitter.launch
+  - goto:
+      layout: even-vertical
+      panes:
+        - 'waitForRos; while true; do rosservice call /uav1/control_manager/goto "goal: [0, -30, 1.5, 0.0]"; sleep 20; rosservice call /uav1/control_manager/goto "goal: [0, 30, 1.5, 0.0]"; sleep 20; done'
+  - plotter:
+      layout: even-vertical
+      panes:
+        - waitForRos; roslaunch compton_camera_python compton_plotter.launch
   - takeoff:
       layout: even-vertical
       panes:
@@ -49,4 +57,4 @@ windows:
       layout: even-vertical
       panes:
         - waitForOdometry; gz camera -c gzclient_camera -f uav1; history -s gz camera -c gzclient_camera -f uav1
-        - waitForOdometry; read; ~/.i3/layout_manager.sh radiation
+        - waitForOdometry; ~/.i3/layout_manager.sh radiation
