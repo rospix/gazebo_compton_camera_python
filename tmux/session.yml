@@ -33,6 +33,10 @@ windows:
       layout: even-vertical
       panes:
         - waitForRos; roslaunch compton_camera_filter optimizer.launch
+  - planner:
+      layout: even-vertical
+      panes:
+        - waitForRos; roslaunch compton_camera_filter trajectory_planner.launch
   - goto:
       layout: even-vertical
       panes:

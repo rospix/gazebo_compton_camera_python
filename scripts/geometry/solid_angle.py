@@ -39,7 +39,7 @@ def spherical_triangle_area(a, b, c):
     area = 0
 
     # use the normal triangle area when the triangle is veeeery small
-    if ab < 1e-3 and bc < 1e-3 and ca < 1e-3:
+    if ab < 1e-1 and bc < 1e-1 and ca < 1e-1:
 
         p = (ab + bc + ca)/2.0
             
