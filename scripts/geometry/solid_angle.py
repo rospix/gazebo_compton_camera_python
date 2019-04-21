@@ -43,7 +43,10 @@ def spherical_triangle_area(a, b, c):
 
         p = (ab + bc + ca)/2.0
             
-        area = m.sqrt(p*(p - ab)*(p - bc)*(p - ca))
+        try:
+            area = m.sqrt(p*(p - ab)*(p - bc)*(p - ca))
+        except:
+            pass
 
     # use the hoversine formula when the sphericallity could influance the result
     else:
