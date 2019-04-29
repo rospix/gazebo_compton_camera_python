@@ -27,9 +27,9 @@ class Rectangle3D:
         self.zero_point = []
 
         # find the normal vector of the plane
-        v1 = points[1] - points[0]
-        v2 = points[3] - points[0]
-        self.normal_vector = np.cross(v1, v2)
+        self.v1 = points[1] - points[0]
+        self.v2 = points[3] - points[0]
+        self.normal_vector = np.cross(self.v1, self.v2)
         self.normal_vector = self.normal_vector / np.linalg.norm(self.normal_vector)
 
         # the defining point of the plane
@@ -37,13 +37,13 @@ class Rectangle3D:
 
         self.plane = Plane(self.zero_point, self.normal_vector)
 
-        ortho_basis1 = v1/np.linalg.norm(v1)
-        ortho_basis2 = v2/np.linalg.norm(v2)
+        ortho_basis1 = self.v1/np.linalg.norm(self.v1)
+        ortho_basis2 = self.v2/np.linalg.norm(self.v2)
 
         self.ortho_basis = np.matrix([ortho_basis1, ortho_basis2, self.normal_vector]).transpose()
         self.ortho_basis_inv = np.linalg.inv(self.ortho_basis)
 
-        self.rectangle_basis = np.matrix([v1, v2, self.normal_vector]).transpose()
+        self.rectangle_basis = np.matrix([self.v1, self.v2, self.normal_vector]).transpose()
         self.rectangle_basis_inv = np.linalg.inv(self.rectangle_basis)
 
         # projector to orthogonal adjucent of the planes normal

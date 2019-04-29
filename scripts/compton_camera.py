@@ -76,10 +76,10 @@ class Detector:
         # FRONT
 
         # give me the 4 front_vertices of the detector
-        self.a = np.array([self.thickness/2, -self.size/2.0, self.size/2.0]) + position
-        self.b = np.array([self.thickness/2, self.size/2.0, self.size/2.0]) + position
-        self.c = np.array([self.thickness/2, self.size/2.0, -self.size/2.0]) + position
-        self.d = np.array([self.thickness/2, -self.size/2.0, -self.size/2.0]) + position
+        self.a = np.array([self.thickness/2, -self.size/2.0, -self.size/2.0]) + position
+        self.b = np.array([self.thickness/2, self.size/2.0, -self.size/2.0]) + position
+        self.c = np.array([self.thickness/2, self.size/2.0, self.size/2.0]) + position
+        self.d = np.array([self.thickness/2, -self.size/2.0, self.size/2.0]) + position
 
         # create the sympy front plane
         self.front = Rectangle3D([self.a, self.b, self.c, self.d])
@@ -87,25 +87,25 @@ class Detector:
         # BACK
 
         # give me the 4 back_vertices of the detector
-        self.e = np.array([-self.thickness/2, -self.size/2.0, self.size/2.0]) + position
-        self.f = np.array([-self.thickness/2, self.size/2.0, self.size/2.0]) + position
-        self.g = np.array([-self.thickness/2, self.size/2.0, -self.size/2.0]) + position
-        self.h = np.array([-self.thickness/2, -self.size/2.0, -self.size/2.0]) + position
+        self.e = np.array([-self.thickness/2, -self.size/2.0, -self.size/2.0]) + position
+        self.f = np.array([-self.thickness/2, self.size/2.0, -self.size/2.0]) + position
+        self.g = np.array([-self.thickness/2, self.size/2.0, self.size/2.0]) + position
+        self.h = np.array([-self.thickness/2, -self.size/2.0, self.size/2.0]) + position
 
         # create the sympy back plane
         self.back = Rectangle3D([self.e, self.f, self.g, self.h])
 
         # orthogonal basis of the detector
-        self.b1 = np.array([0, self.size/2.0 - (-self.size/2.0), self.size/2.0 - self.size/2.0])
-        self.b2 = np.array([0, -self.size/2.0 - (-self.size/2.0), -self.size/2.0 - self.size/2.0])
+        self.b1 = np.array([0, self.size, 0])
+        self.b2 = np.array([0, 0, self.size])
 
         # SIDES
 
         # create the sympy side planes
-        self.sides.append(Rectangle3D([self.a, self.e, self.h, self.d]))
-        self.sides.append(Rectangle3D([self.b, self.f, self.e, self.a]))
-        self.sides.append(Rectangle3D([self.c, self.g, self.f, self.b]))
-        self.sides.append(Rectangle3D([self.d, self.h, self.c, self.g]))
+        self.sides.append(Rectangle3D([self.e, self.a, self.d, self.h]))
+        self.sides.append(Rectangle3D([self.a, self.e, self.f, self.b]))
+        self.sides.append(Rectangle3D([self.b, self.f, self.g, self.c]))
+        self.sides.append(Rectangle3D([self.c, self.g, self.h, self.d]))
 
         self.vertices.append(self.a)
         self.vertices.append(self.b)
@@ -325,32 +325,47 @@ class ComptonCamera:
     
     # #} end of sampleDetector()
 
+    # #{ samplePolygon()
+    
+    def samplePolygon(self, facet):
+    
+        k1 = random.uniform(1e-2, 1.0-1e-2)
+        k2 = random.uniform(1e-2, 1.0-1e-2)
+
+        return facet.zero_point + facet.v1*k1 + facet.v2*k2
+    
+    # #} end of sampleDetector()
+
     # #{ simulate()
     
-    def simulate(self, energy, source_point, cs_cross_section, cs_density):
+    def simulate(self, energy, source_point, facet, cs_cross_section, cs_density):
         
-        point = self.sampleDetector(self.detector_1)
+        point = self.samplePolygon(facet)
 
-        ray = Ray(source_point, point, energy)
+        ray_from_source = Ray(source_point, point, energy)
+        ray = Ray(point + ray_from_source.rayDirection*0.0000001, point + ray_from_source.rayDirection, energy)
     
         # intersection with the back side of the 1st detector
         intersect1_second = self.detector_1.back.intersection(ray)
-    
-        # no collision with the back face
+
+        # no collision with the back face, check the front face
         if not isinstance(intersect1_second, np.ndarray):
-            return
+            intersect1_second = self.detector_1.front.intersection(ray)
     
+        # no collision with the back/front face, check the side facets
+        if not isinstance(intersect1_second, np.ndarray):
+
             # check intersection with the sides
             for i,side in enumerate(self.detector_1.sides):
-    
+
                 intersect1_second = side.intersection(ray)
-    
+
                 if isinstance(intersect1_second, np.ndarray):
                     break
     
-        # if the ray came from the oposite direction, discard it
-        if np.linalg.norm(intersect1_second - source_point) < np.linalg.norm(point - source_point):
-            return
+        # # if the ray came from the oposite direction, discard it
+        # if np.linalg.norm(intersect1_second - source_point) < np.linalg.norm(point - source_point):
+        #     return
     
         # if there is not a collission with any other facet of the detector
         if not isinstance(intersect1_second, np.ndarray):
@@ -551,6 +566,7 @@ class ComptonCamera:
             rospy.loginfo_throttle(1.0, '[ComptonCamera]: waiting for data')
             return
 
+        # for each of the sources in the scene
         for source_idx,source in enumerate(self.rad_sources):
 
             if (rospy.Time.now() - source.last_update).to_sec() > 1.0:
@@ -564,29 +580,48 @@ class ComptonCamera:
             source_position_in_local = self.quaternion_w2d.rotate(source_camera_frame)
 
             # rospy.loginfo_throttle(1.0, 'Source in FCU: {} {} {}'.format(source_position_in_local[0], source_position_in_local[1], source_position_in_local[2]))
-        
-            detector_solid_angle = geometry.solid_angle.quadrilateral_solid_angle(self.a1, self.b1, self.c1, self.d1, source_position_in_local)
-            aparent_activity = source.activity*(detector_solid_angle/(4*m.pi))
 
-            n_particles = int(aparent_activity*self.rad_timer_dt)
+            # for each facet of the detector
+            facets = [self.detector_1.front, self.detector_1.sides[0], self.detector_1.sides[1], self.detector_1.sides[2], self.detector_1.sides[3]]
 
-            energy_roundedup = roundup(source.energy/1000.0, float(self.energy_granularity))
-            cs_cross_section = self.cs_cross_sections[energy_roundedup]
-            cs_density = self.cs_densities[energy_roundedup]
+            for facet_idx,facet in enumerate(facets):
 
-            # simulate n particles
-            time_start = rospy.Time.now()
+                # print("facet_idx: {}, facet_idx, facet.plane.planeNormal: {}".format(facet_idx, facet.plane.planeNormal))
+                # print("source_position_in_local: {}".format(source_position_in_local))
 
-            for i in range(0, n_particles):
-                self.simulate(source.energy, source_position_in_local, cs_cross_section, cs_density)
+                # check if the facet is in the right orientation towards the source
+                if facet.plane.planeNormal.dot(source_position_in_local) <= 0:
+                    continue
+
+                # calculate the apparent activity of the source
+                facet_solid_angle = geometry.solid_angle.quadrilateral_solid_angle(facet.points_3d[0], facet.points_3d[1], facet.points_3d[2], facet.points_3d[3], source_position_in_local)
+                aparent_activity = source.activity*(facet_solid_angle/(4*m.pi))
+
+                # how many particle are we shooting towards the rectangle
+                n_particles = int(aparent_activity*self.rad_timer_dt)
+
+                # round up the energy
+                energy_roundedup = roundup(source.energy/1000.0, float(self.energy_granularity))
+
+                # find the pre-calculated cross section for the energy
+                cs_cross_section = self.cs_cross_sections[energy_roundedup]
+                cs_density = self.cs_densities[energy_roundedup]
+
+                # simulate n particles
+                time_start = rospy.Time.now()
+
+                # simulate n_particles
+                for i in range(0, n_particles):
+
+                    self.simulate(source.energy, source_position_in_local, facet, cs_cross_section, cs_density)
+
+                    duration = (rospy.Time.now() - time_start).to_sec()
+                    if duration > 0.01/len(self.rad_sources):
+                        break
 
                 duration = (rospy.Time.now() - time_start).to_sec()
-                if duration > 0.01/len(self.rad_sources):
-                    break
 
-            duration = (rospy.Time.now() - time_start).to_sec()
-
-            rospy.loginfo('[ComptonCamera]: aparent_activity of the source {} is {} ({}), duration={} s'.format(source.id, aparent_activity, n_particles, duration))
+                rospy.loginfo('[ComptonCamera]: aparent_activity of the source {} towards the facet {} is {} ({}), duration={} s'.format(source.id, facet_idx, aparent_activity, n_particles, duration))
     
     # #} end of callbackOdometry()
 
