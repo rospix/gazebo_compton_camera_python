@@ -19,7 +19,7 @@ windows:
   - spawn:
       layout: even-vertical
       panes:
-        - waitForSimulation; spawn 1 2 3 --run --delete --enable-rangefinder --enable-ground-truth
+        - waitForSimulation; spawn --file pos.txt --run --delete --enable-rangefinder --enable-ground-truth
   - control:
       layout: even-vertical
       panes:
@@ -29,21 +29,19 @@ windows:
   - compton_camera:
       layout: even-vertical
       panes:
-        - export UAV_NAME=uav1; waitForRos; roslaunch compton_camera_python compton_camera.launch
-        - export UAV_NAME=uav2; waitForRos; roslaunch compton_camera_python compton_camera.launch
-        - export UAV_NAME=uav3; waitForRos; roslaunch compton_camera_python compton_camera.launch
+        - export UAV_NAME=uav1; waitForRos; roslaunch compton_camera_python compton_camera_3.launch
+        - export UAV_NAME=uav2; waitForRos; roslaunch compton_camera_python compton_camera_3.launch
+        - export UAV_NAME=uav3; waitForRos; roslaunch compton_camera_python compton_camera_3.launch
   - compton_filter:
       layout: even-vertical
       panes:
-        - export UAV_NAME=uav1; waitForRos; roslaunch compton_camera_filter compton_filter.launch
-        - export UAV_NAME=uav2; waitForRos; roslaunch compton_camera_filter compton_filter.launch
-        - export UAV_NAME=uav3; waitForRos; roslaunch compton_camera_filter compton_filter.launch
+        - export UAV_NAME=uav1; waitForRos; roslaunch compton_camera_filter compton_filter_3.launch
+        - export UAV_NAME=uav2; waitForRos; roslaunch compton_camera_filter compton_filter_3.launch
+        - export UAV_NAME=uav3; waitForRos; roslaunch compton_camera_filter compton_filter_3.launch
   - optimizer:
       layout: even-vertical
       panes:
-        - export UAV_NAME=uav1; waitForRos; roslaunch compton_camera_filter optimizer.launch
-        - export UAV_NAME=uav2; waitForRos; roslaunch compton_camera_filter optimizer.launch
-        - export UAV_NAME=uav3; waitForRos; roslaunch compton_camera_filter optimizer.launch
+        - waitForRos; roslaunch compton_camera_filter optimizer_3.launch
   - planner:
       layout: even-vertical
       panes:
@@ -57,9 +55,7 @@ windows:
   - plotter:
       layout: even-vertical
       panes:
-        - export UAV_NAME=uav1; waitForRos; roslaunch compton_camera_python compton_plotter.launch
-        - export UAV_NAME=uav2; waitForRos; roslaunch compton_camera_python compton_plotter.launch
-        - export UAV_NAME=uav3; waitForRos; roslaunch compton_camera_python compton_plotter.launch
+        - waitForRos; roslaunch compton_camera_python compton_plotter.launch
   - takeoff:
       layout: even-vertical
       panes:
