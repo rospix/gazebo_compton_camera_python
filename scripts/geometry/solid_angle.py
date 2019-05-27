@@ -25,7 +25,16 @@ def spherical_angle(a, b, c):
 
 def vector_angle(a, b):
 
-    vector_angle = m.acos(np.dot(a, b)/(np.linalg.norm(a)*np.linalg.norm(b)))
+    vector_angle = 0
+
+    try:
+        vector_angle = m.acos(np.dot(a, b)/(np.linalg.norm(a)*np.linalg.norm(b)))
+    except:
+        print("a: {}".format(a))
+        print("b: {}".format(b))
+        print("norm a: {}".format(np.linalg.norm(a)))
+        print("norm b: {}".format(np.linalg.norm(b)))
+        print("dot a b: {}".format(np.dot(a, b)))
 
     return vector_angle 
 
