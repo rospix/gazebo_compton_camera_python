@@ -31,15 +31,15 @@ windows:
   - compton_filter:
       layout: even-vertical
       panes:
-        - export UAV_NAME=uav1; waitForRos; roslaunch compton_camera_filter compton_filter.launch
+        - export UAV_NAME=uav1; waitForRos; roslaunch compton_camera_filter compton_filter_1.launch
   - optimizer:
       layout: even-vertical
       panes:
-        - export UAV_NAME=uav1; waitForRos; roslaunch compton_camera_filter optimizer.launch
+        - export UAV_NAME=uav1; waitForRos; roslaunch compton_camera_filter optimizer_1.launch
   - planner:
       layout: even-vertical
       panes:
-        - export UAV_NAME=uav1; waitForRos; roslaunch compton_camera_filter trajectory_planner.launch
+        - export UAV_NAME=uav1; waitForRos; roslaunch compton_camera_filter trajectory_planner_1.launch
   - goto:
       layout: even-vertical
       panes:
@@ -47,7 +47,7 @@ windows:
   - plotter:
       layout: even-vertical
       panes:
-        - export UAV_NAME=uav1; waitForRos; roslaunch compton_camera_python compton_plotter.launch
+        - export UAV_NAME=uav1; waitForRos; roslaunch compton_camera_python compton_plotter_1.launch
   - takeoff:
       layout: even-vertical
       panes:

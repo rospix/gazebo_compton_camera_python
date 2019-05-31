@@ -55,7 +55,7 @@ windows:
   - plotter:
       layout: even-vertical
       panes:
-        - waitForRos; roslaunch compton_camera_python compton_plotter.launch
+        - waitForRos; roslaunch compton_camera_python compton_plotter_1.launch
   - takeoff:
       layout: even-vertical
       panes:
