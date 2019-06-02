@@ -27,7 +27,7 @@ windows:
   - compton_camera:
       layout: even-vertical
       panes:
-        - export UAV_NAME=uav1; waitForRos; roslaunch compton_camera_python compton_camera.launch
+        - export UAV_NAME=uav1; waitForRos; roslaunch compton_camera_python compton_camera_1.launch
   - compton_filter:
       layout: even-vertical
       panes:

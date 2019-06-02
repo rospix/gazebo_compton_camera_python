@@ -9,7 +9,7 @@
       <rosparam file="$(find compton_camera_python)/config/compton_camera.yaml" command="load" />
 
       <!-- subscribed topics -->
-      <remap from="~radiation_source_in" to="/gazebo/radiation" />
+      <remap from="~radiation_source_in" to="/radiation/sources" />
       <remap from="~odometry_in" to="odometry/odom_main" />
 
       <!-- advertised topics -->

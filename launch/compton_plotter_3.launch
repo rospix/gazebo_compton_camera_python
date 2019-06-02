@@ -10,7 +10,7 @@
 
       <!-- subscribed topics -->
       <remap from="~cone_in" to="/cones" />
-      <remap from="~source_in" to="/gazebo/radiation" />
+      <remap from="~source_in" to="/radiation/sources" />
 
     </node>
 
