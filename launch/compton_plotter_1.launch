@@ -8,6 +8,8 @@
 
       <rosparam file="$(find compton_camera_python)/config/plotter.yaml" command="load" />
 
+      <param name="uav_name" value="$(arg uav_name)" />
+
       <!-- subscribed topics -->
       <remap from="~cone_in" to="compton_camera/cone" />
       <remap from="~source_in" to="/radiation/sources_ros" />

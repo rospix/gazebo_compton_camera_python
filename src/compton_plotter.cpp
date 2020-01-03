@@ -67,6 +67,7 @@ private:
   int             max_cones_;
   double          cone_length_;
   double          source_size_;
+  std::string     uav_name_;
 
   std::list<Cone> cones;
   std::mutex      mutex_cones;
@@ -101,6 +102,7 @@ void ComptonPlotter::onInit() {
   param_loader.load_param("cone_length", cone_length_);
   param_loader.load_param("main_timer_rate", main_timer_rate_);
   param_loader.load_param("source_size", source_size_);
+  param_loader.load_param("uav_name", uav_name_);
 
   // --------------------------------------------------------------
   // |                         subscribers                        |
@@ -119,7 +121,7 @@ void ComptonPlotter::onInit() {
   // |                     visualization tools                    |
   // --------------------------------------------------------------
 
-  visual_tools_.reset(new rviz_visual_tools::RvizVisualTools("local_origin", "/rviz_visual_markers"));
+  visual_tools_.reset(new rviz_visual_tools::RvizVisualTools(uav_name_+"/local_origin", "/rviz_visual_markers"));
   visual_tools_->loadMarkerPub();  // create publisher before waiting
 
   // Clear messages
