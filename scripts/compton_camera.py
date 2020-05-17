@@ -516,7 +516,7 @@ class ComptonCamera:
         if data.id in self.rad_sources_ids:
 
             idx = self.rad_sources_ids.get(data.id)
-            self.rad_sources[idx-1].position = np.array([data.x, data.y, data.z])
+            self.rad_sources[idx-1].position = np.array([data.world_pos.x, data.world_pos.y, data.world_pos.z])
             self.rad_sources[idx-1].last_update = rospy.Time.now()
 
         else:
@@ -527,7 +527,7 @@ class ComptonCamera:
                 rospy.logerr('the material {} is not in the database of radiation sources'.format(data.material))
             else:
 
-                new_source = Source(materials.radiation_sources[data.material].photon_energy, data.activity, np.array([data.x, data.y, data.z]), data.id)
+                new_source = Source(materials.radiation_sources[data.material].photon_energy, data.activity, np.array([data.world_pos.x, data.world_pos.y, data.world_pos.z]), data.id)
                 self.rad_sources.append(new_source)
                 self.rad_sources_ids[data.id] = len(self.rad_sources)
 

@@ -10,7 +10,7 @@
 #include <Eigen/Eigen>
 #include <mutex>
 
-#include <mrs_lib/ParamLoader.h>
+#include <mrs_lib/param_loader.h>
 
 namespace compton_camera_python
 {
@@ -98,11 +98,11 @@ void ComptonPlotter::onInit() {
 
   mrs_lib::ParamLoader param_loader(nh_, "ComptonPlotter");
 
-  param_loader.load_param("max_cones", max_cones_);
-  param_loader.load_param("cone_length", cone_length_);
-  param_loader.load_param("main_timer_rate", main_timer_rate_);
-  param_loader.load_param("source_size", source_size_);
-  param_loader.load_param("uav_name", uav_name_);
+  param_loader.loadParam("max_cones", max_cones_);
+  param_loader.loadParam("cone_length", cone_length_);
+  param_loader.loadParam("main_timer_rate", main_timer_rate_);
+  param_loader.loadParam("source_size", source_size_);
+  param_loader.loadParam("uav_name", uav_name_);
 
   // --------------------------------------------------------------
   // |                         subscribers                        |
@@ -121,7 +121,7 @@ void ComptonPlotter::onInit() {
   // |                     visualization tools                    |
   // --------------------------------------------------------------
 
-  visual_tools_.reset(new rviz_visual_tools::RvizVisualTools(uav_name_+"/local_origin", "/rviz_visual_markers"));
+  visual_tools_.reset(new rviz_visual_tools::RvizVisualTools(uav_name_ + "/gps_origin", "/rviz_visual_markers"));
   visual_tools_->loadMarkerPub();  // create publisher before waiting
 
   // Clear messages
@@ -136,7 +136,7 @@ void ComptonPlotter::onInit() {
 
   // | ----------------------- finish init ---------------------- |
 
-  if (!param_loader.loaded_successfully()) {
+  if (!param_loader.loadedSuccessfully()) {
     ROS_ERROR("[ComptonPlotter]: Could not load all parameters!");
     ros::shutdown();
   }
@@ -247,14 +247,14 @@ void ComptonPlotter::mainTimer([[maybe_unused]] const ros::TimerEvent &event) {
       double size = source_size_ / 2.0;
 
       Eigen::Isometry3d pose1 = Eigen::Isometry3d::Identity();
-      pose1.translation().x() = it->second.source_msg.x - size;
-      pose1.translation().y() = it->second.source_msg.y - size;
-      pose1.translation().z() = it->second.source_msg.z - size;
+      pose1.translation().x() = it->second.source_msg.world_pos.x - size;
+      pose1.translation().y() = it->second.source_msg.world_pos.y - size;
+      pose1.translation().z() = it->second.source_msg.world_pos.z - size;
 
       Eigen::Isometry3d pose2 = Eigen::Isometry3d::Identity();
-      pose2.translation().x() = it->second.source_msg.x + size;
-      pose2.translation().y() = it->second.source_msg.y + size;
-      pose2.translation().z() = it->second.source_msg.z + size;
+      pose2.translation().x() = it->second.source_msg.world_pos.x + size;
+      pose2.translation().y() = it->second.source_msg.world_pos.y + size;
+      pose2.translation().z() = it->second.source_msg.world_pos.z + size;
 
       visual_tools_->publishCuboid(pose1.translation(), pose2.translation(), rviz_visual_tools::colors::BLUE);
     }

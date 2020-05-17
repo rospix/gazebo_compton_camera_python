@@ -44,9 +44,9 @@ Te_element = Element("Te", 5850.0, 52, 0.12760)
 
 radiation_sources = dict()
 
-Cs_137 = RadiationSource("Cs137", 137, 3.215e12, 661000)
+Cs_137 = RadiationSource("cs137", 137, 3.215e12, 661000)
 radiation_sources[Cs_137.name] = Cs_137
-Am241 = RadiationSource("Am241", 241, 127e9, 59000)
+Am241 = RadiationSource("am241", 241, 127e9, 59000)
 radiation_sources[Am241.name] = Am241
 
 Si = Material("Si", [Si_element], [1], 2320.0, 0.02808550)

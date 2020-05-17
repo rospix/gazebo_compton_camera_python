@@ -12,7 +12,7 @@
 
       <!-- subscribed topics -->
       <remap from="~cone_in" to="compton_camera/cone" />
-      <remap from="~source_in" to="/radiation/sources_ros" />
+      <remap from="~source_in" to="/radiation/sources" />
 
     </node>
 
