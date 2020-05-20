@@ -10,6 +10,7 @@ Panels:
         - /uav1_2Dkalman1/Covariance1
         - /uav1_2Dkalman1/Covariance1/Position1
         - /uav1_optimizer1/Covariance1/Position1
+        - /RobotModel1
       Splitter Ratio: 0.5
     Tree Height: 533
   - Class: rviz/Selection
@@ -68,8 +69,7 @@ Visualization Manager:
       Marker Topic: /rviz_visual_markers
       Name: MarkerArray
       Namespaces:
-        Cuboid: true
-        Triangle: true
+        {}
       Queue Size: 100
       Value: true
     - Angle Tolerance: 0.009999999776482582
@@ -748,6 +748,42 @@ Visualization Manager:
         "": true
       Queue Size: 100
       Value: true
+    - Alpha: 1
+      Class: rviz/RobotModel
+      Collision Enabled: false
+      Enabled: true
+      Links:
+        All Links Enabled: true
+        Expand Joint Details: false
+        Expand Link Details: false
+        Expand Tree: false
+        Link Tree Style: Links in Alphabetic Order
+        uav1/fcu:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        uav1/fcu/arms:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        uav1/fcu/props:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        uav1/fcu/uav_marker:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+      Name: RobotModel
+      Robot Description: /uav1/robot_model
+      TF Prefix: ""
+      Update Interval: 0
+      Value: true
+      Visual Enabled: true
   Enabled: true
   Global Options:
     Background Color: 255; 255; 255
@@ -776,7 +812,7 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/ThirdPersonFollower
-      Distance: 136.25865173339844
+      Distance: 21.370214462280273
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
