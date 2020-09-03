@@ -1,7 +1,7 @@
 <launch>
 
   <arg name="uav_name" default="$(optenv UAV_NAME uav)"/>
-  <arg name="world_frame_name" default="$(arg uav_name)/gps_origin"/>
+  <arg name="world_frame_name" default="$(arg uav_name)/stable_origin"/>
 
   <group ns="$(arg uav_name)">
 
@@ -13,7 +13,7 @@
       <param name="world_frame_name" value="$(arg world_frame_name)" />
 
       <!-- subscribed topics -->
-      <remap from="~cone_in" to="/cones" />
+      <remap from="~cone_in" to="compton_camera/cones" />
       <remap from="~source_in" to="/radiation/sources" />
 
     </node>

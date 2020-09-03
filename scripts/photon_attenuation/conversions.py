@@ -16,7 +16,7 @@ def energy_J_to_eV(energy):
 
     return 6.242e18 * energy
 
-# return energy in eV
+# return energy in Jouls
 def energy_ev_to_J(energy):
 
     return energy / 6.242e18

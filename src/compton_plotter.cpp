@@ -1,7 +1,7 @@
 #include <ros/ros.h>
 #include <nodelet/nodelet.h>
 
-#include <gazebo_rad_msgs/Cone.h>
+#include <rad_msgs/Cone.h>
 #include <gazebo_rad_msgs/RadiationSource.h>
 
 #include <rviz_visual_tools/rviz_visual_tools.h>
@@ -63,11 +63,12 @@ private:
 
 private:
   ros::Subscriber subscriber_cone;
-  void            callbackCone(const gazebo_rad_msgs::ConeConstPtr &msg);
+  void            callbackCone(const rad_msgs::ConeConstPtr &msg);
   int             max_cones_;
   double          cone_length_;
   double          source_size_;
-  std::string     uav_name_;
+  std::string     _uav_name_;
+  std::string     _world_frame_name_;
 
   std::list<Cone> cones;
   std::mutex      mutex_cones;
@@ -102,7 +103,13 @@ void ComptonPlotter::onInit() {
   param_loader.loadParam("cone_length", cone_length_);
   param_loader.loadParam("main_timer_rate", main_timer_rate_);
   param_loader.loadParam("source_size", source_size_);
-  param_loader.loadParam("uav_name", uav_name_);
+  param_loader.loadParam("uav_name", _uav_name_);
+  param_loader.loadParam("world_frame_name", _world_frame_name_);
+
+  if (!param_loader.loadedSuccessfully()) {
+    ROS_ERROR("[ComptonPlotter]: Could not load all parameters!");
+    ros::shutdown();
+  }
 
   // --------------------------------------------------------------
   // |                         subscribers                        |
@@ -121,7 +128,7 @@ void ComptonPlotter::onInit() {
   // |                     visualization tools                    |
   // --------------------------------------------------------------
 
-  visual_tools_.reset(new rviz_visual_tools::RvizVisualTools(uav_name_ + "/gps_origin", "/rviz_visual_markers"));
+  visual_tools_.reset(new rviz_visual_tools::RvizVisualTools(_world_frame_name_, "/rviz_visual_markers"));
   visual_tools_->loadMarkerPub();  // create publisher before waiting
 
   // Clear messages
@@ -136,11 +143,6 @@ void ComptonPlotter::onInit() {
 
   // | ----------------------- finish init ---------------------- |
 
-  if (!param_loader.loadedSuccessfully()) {
-    ROS_ERROR("[ComptonPlotter]: Could not load all parameters!");
-    ros::shutdown();
-  }
-
   is_initialized = true;
 
   ROS_INFO("[ComptonPlotter]: initialized");
@@ -154,7 +156,7 @@ void ComptonPlotter::onInit() {
 
 /* callbackCone() //{ */
 
-void ComptonPlotter::callbackCone(const gazebo_rad_msgs::ConeConstPtr &msg) {
+void ComptonPlotter::callbackCone(const rad_msgs::ConeConstPtr &msg) {
 
   if (!is_initialized)
     return;
@@ -247,14 +249,14 @@ void ComptonPlotter::mainTimer([[maybe_unused]] const ros::TimerEvent &event) {
       double size = source_size_ / 2.0;
 
       Eigen::Isometry3d pose1 = Eigen::Isometry3d::Identity();
-      pose1.translation().x() = it->second.source_msg.world_pos.x - size;
-      pose1.translation().y() = it->second.source_msg.world_pos.y - size;
-      pose1.translation().z() = it->second.source_msg.world_pos.z - size;
+      pose1.translation().x() = it->second.source_msg.x - size;
+      pose1.translation().y() = it->second.source_msg.y - size;
+      pose1.translation().z() = it->second.source_msg.z - size;
 
       Eigen::Isometry3d pose2 = Eigen::Isometry3d::Identity();
-      pose2.translation().x() = it->second.source_msg.world_pos.x + size;
-      pose2.translation().y() = it->second.source_msg.world_pos.y + size;
-      pose2.translation().z() = it->second.source_msg.world_pos.z + size;
+      pose2.translation().x() = it->second.source_msg.x + size;
+      pose2.translation().y() = it->second.source_msg.y + size;
+      pose2.translation().z() = it->second.source_msg.z + size;
 
       visual_tools_->publishCuboid(pose1.translation(), pose2.translation(), rviz_visual_tools::colors::BLUE);
     }
