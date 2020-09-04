@@ -249,14 +249,14 @@ void ComptonPlotter::mainTimer([[maybe_unused]] const ros::TimerEvent &event) {
       double size = source_size_ / 2.0;
 
       Eigen::Isometry3d pose1 = Eigen::Isometry3d::Identity();
-      pose1.translation().x() = it->second.source_msg.x - size;
-      pose1.translation().y() = it->second.source_msg.y - size;
-      pose1.translation().z() = it->second.source_msg.z - size;
+      pose1.translation().x() = it->second.source_msg.world_pos.x - size;
+      pose1.translation().y() = it->second.source_msg.world_pos.y - size;
+      pose1.translation().z() = it->second.source_msg.world_pos.z - size;
 
       Eigen::Isometry3d pose2 = Eigen::Isometry3d::Identity();
-      pose2.translation().x() = it->second.source_msg.x + size;
-      pose2.translation().y() = it->second.source_msg.y + size;
-      pose2.translation().z() = it->second.source_msg.z + size;
+      pose2.translation().x() = it->second.source_msg.world_pos.x + size;
+      pose2.translation().y() = it->second.source_msg.world_pos.y + size;
+      pose2.translation().z() = it->second.source_msg.world_pos.z + size;
 
       visual_tools_->publishCuboid(pose1.translation(), pose2.translation(), rviz_visual_tools::colors::BLUE);
     }
