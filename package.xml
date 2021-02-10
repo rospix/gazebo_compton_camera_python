@@ -1,17 +1,11 @@
 <?xml version="1.0"?>
 <package format="2">
-  <name>compton_camera_python</name>
+  <name>gazebo_compton_camera_python</name>
   <version>0.0.0</version>
-  <description>Tomas's package</description>
+  <description>Gazebo Compton camera python implementaion</description>
 
-  <!-- One maintainer tag required, multiple allowed, one person per tag -->
-  <!-- Example:  -->
-  <!-- <maintainer email="jane.doe@example.com">Jane Doe</maintainer> -->
-  <maintainer email="klaxalk@todo.todo">klaxalk</maintainer>
+  <maintainer email="tomas.baca@fel.cvut.cz">Tomas Baca</maintainer>
 
-  <!-- One license tag required, multiple allowed, one license per tag -->
-  <!-- Commonly used license strings: -->
-  <!--   BSD, MIT, Boost Software License, GPLv2, GPLv3, LGPLv2.1, LGPLv3 -->
   <license>TODO</license>
 
   <buildtool_depend>catkin</buildtool_depend>

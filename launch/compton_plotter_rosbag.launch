@@ -5,9 +5,9 @@
 
   <group ns="$(arg uav_name)">
 
-    <node pkg="nodelet" type="nodelet" name="compton_plotter" args="standalone compton_camera_python/ComptonPlotter" output="screen">
+    <node pkg="nodelet" type="nodelet" name="compton_plotter" args="standalone gazebo_compton_camera_python/ComptonPlotter" output="screen">
 
-      <rosparam file="$(find compton_camera_python)/config/plotter.yaml" command="load" />
+      <rosparam file="$(find gazebo_compton_camera_python)/config/plotter.yaml" command="load" />
 
       <param name="uav_name" value="$(arg uav_name)" />
       <param name="world_frame_name" value="$(arg world_frame_name)" />

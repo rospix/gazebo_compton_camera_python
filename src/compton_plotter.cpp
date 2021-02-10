@@ -12,7 +12,7 @@
 
 #include <mrs_lib/param_loader.h>
 
-namespace compton_camera_python
+namespace gazebo_compton_camera_python
 {
 
 /* class Cone //{ */
@@ -267,7 +267,7 @@ void ComptonPlotter::mainTimer([[maybe_unused]] const ros::TimerEvent &event) {
 
 //}
 
-}  // namespace compton_camera_python
+}  // namespace gazebo_compton_camera_python
 
 #include <pluginlib/class_list_macros.h>
-PLUGINLIB_EXPORT_CLASS(compton_camera_python::ComptonPlotter, nodelet::Nodelet)
+PLUGINLIB_EXPORT_CLASS(gazebo_compton_camera_python::ComptonPlotter, nodelet::Nodelet)

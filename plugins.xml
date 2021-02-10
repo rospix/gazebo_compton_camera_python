@@ -1,5 +1,5 @@
 <library path="lib/libComptonPlotter">
-  <class name="compton_camera_python/ComptonPlotter" type="compton_camera_python::ComptonPlotter" base_class_type="nodelet::Nodelet">
+  <class name="gazebo_compton_camera_python/ComptonPlotter" type="gazebo_compton_camera_python::ComptonPlotter" base_class_type="nodelet::Nodelet">
     <description>ComptonPlotter nodelet</description>
   </class>
 </library>

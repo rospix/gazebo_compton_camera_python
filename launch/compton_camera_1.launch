@@ -4,9 +4,9 @@
 
   <group ns="$(arg uav_name)">
 
-    <node name="compton_camera" pkg="compton_camera_python" type="compton_camera.py" output="screen">
+    <node name="compton_camera" pkg="gazebo_compton_camera_python" type="compton_camera.py" output="screen">
 
-      <rosparam file="$(find compton_camera_python)/config/compton_camera.yaml" command="load" />
+      <rosparam file="$(find gazebo_compton_camera_python)/config/compton_camera.yaml" command="load" />
 
       <!-- subscribed topics -->
       <remap from="~radiation_source_in" to="/radiation/sources" />

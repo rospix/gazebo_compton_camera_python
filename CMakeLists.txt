@@ -1,10 +1,8 @@
-cmake_minimum_required(VERSION 2.8.3)
-project(compton_camera_python)
+cmake_minimum_required(VERSION 3.1.2)
+project(gazebo_compton_camera_python)
 
-## Compile as C++11, supported in ROS Kinetic and newer
-# add_compile_options(-std=c++11)
-
-set(CMAKE_CXX_FLAGS "-std=c++17 -fno-diagnostics-color")
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 # include Eigen3
 find_package(Eigen3 REQUIRED)
