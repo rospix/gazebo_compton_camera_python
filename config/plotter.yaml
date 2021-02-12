@@ -1,6 +1,0 @@
-main_timer_rate: 5.0 # [m]
-
-max_cones: 1 # []
-cone_length: 50 # [m]
-
-source_size: 1.0 # [m]

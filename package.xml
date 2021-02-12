@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package format="2">
   <name>gazebo_compton_camera_python</name>
-  <version>0.0.0</version>
+  <version>1.0.0</version>
   <description>Gazebo Compton camera python implementaion</description>
 
   <maintainer email="tomas.baca@fel.cvut.cz">Tomas Baca</maintainer>
@@ -11,14 +11,7 @@
   <buildtool_depend>catkin</buildtool_depend>
 
   <depend>rospy</depend>
-  <depend>std_msgs</depend>
-  <depend>nodelet</depend>
-  <depend>roscpp</depend>
-  <depend>message_runtime</depend>
   <depend>gazebo_rad_msgs</depend>
-  <depend>rviz_visual_tools</depend>
-  <depend>visualization_msgs</depend>
-  <depend>mrs_lib</depend>
   <depend>rad_msgs</depend>
 
   <export>
