@@ -1,4 +1,4 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python3
 
 import rospy
 import tf
@@ -25,7 +25,7 @@ from geometry.rectangle3d import Rectangle3D
 from nav_msgs.msg import Odometry
 from gazebo_rad_msgs.msg import RadiationSource
 
-from gazebo_rad_msgs.msg import Cone as ConeMsg
+from rad_msgs.msg import Cone as ConeMsg
 
 simulate_energy_noise = True
 simulate_pixel_uncertainty = True
@@ -614,9 +614,9 @@ class ComptonCamera:
                 if n_particles > 1:
 
                   for i in range(0, int(n_particles)):
-                  
+
                       self.simulate(source.energy, source_position_in_local, facet, cs_cross_section, cs_density)
-                  
+
                       duration = (rospy.Time.now() - time_start).to_sec()
                       if duration > 0.01/len(self.rad_sources):
                           break
@@ -626,7 +626,7 @@ class ComptonCamera:
                 else:
                     if random.uniform(0.0, 1.0) < n_particles:
 
-                        rospy.loginfo('[ComptonCamera]: particle simualted by a coin toss') 
+                        rospy.loginfo('[ComptonCamera]: particle simualted by a coin toss')
                         self.simulate(source.energy, source_position_in_local, facet, cs_cross_section, cs_density)
 
                 duration = (rospy.Time.now() - time_start).to_sec()

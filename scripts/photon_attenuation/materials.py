@@ -1,4 +1,4 @@
-import constants
+import photon_attenuation.constants as constants
 
 class Element:
 

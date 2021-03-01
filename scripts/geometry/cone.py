@@ -1,10 +1,9 @@
 import numpy as np
 import math as m
 
-import solid_angle
+import geometry.solid_angle as solid_angle
 from pyquaternion import Quaternion
-from raytracing import Ray
-import geometry.solid_angle
+from geometry.raytracing import Ray
 
 class Cone:
 

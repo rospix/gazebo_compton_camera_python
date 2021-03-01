@@ -1,5 +1,5 @@
 import math as m
-import constants
+import photon_attenuation.constants as constants
 
 # return energy in Jouls
 def wavelength_to_J(wavelength):

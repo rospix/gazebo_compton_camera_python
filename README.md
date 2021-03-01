@@ -1,6 +1,6 @@
 # prerequisities
 
 ```bash
-sudo apt install ros-melodic-eigen-stl-containers ros-melodic-graph-msgs
-sudo pip install pyquaternion
+sudo apt-get -y install ros-noetic-eigen-stl-containers ros-noetic-graph-msgs
+sudo pip3 install pyquaternion pyyaml
 ```

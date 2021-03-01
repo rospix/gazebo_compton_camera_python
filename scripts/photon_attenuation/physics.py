@@ -1,8 +1,8 @@
 import math as m
 import numpy as np
 
-import constants
-import conversions
+import photon_attenuation.constants as constants
+import photon_attenuation.conversions as conversions
 
 # #{ comptonRatio()
 
