@@ -29,8 +29,8 @@ from gazebo_rad_msgs.msg import RadiationSource
 from rad_msgs.msg import ClusterList as ClusterListMsg
 from rad_msgs.msg import Cluster as ClusterMsg
 
-simulate_energy_noise = True
-simulate_pixel_uncertainty = True
+simulate_energy_noise = False
+simulate_pixel_uncertainty = False
 
 # simulate_energy_noise = False
 # simulate_pixel_uncertainty = False
