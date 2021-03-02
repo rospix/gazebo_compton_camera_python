@@ -345,40 +345,37 @@ class ComptonCamera:
         point = self.samplePolygon(facet)
 
         ray_from_source = Ray(source_point, point, energy)
+
+        # new ray starting just after the facet
         ray = Ray(point + ray_from_source.rayDirection*0.0000001, point + ray_from_source.rayDirection, energy)
 
-        # intersection with the back side of the 1st detector
-        intersect1_second = self.detector_1.back.intersection(ray)
+        valid_intersections = []
 
-        # no collision with the back face, check the front face
-        if not isinstance(intersect1_second, np.ndarray):
-            intersect1_second = self.detector_1.front.intersection(ray)
+        intersection1_second = self.detector_1.front.intersection(ray)
 
-        # no collision with the back/front face, check the side facets
-        if not isinstance(intersect1_second, np.ndarray):
+        if not isinstance(intersection1_second, np.ndarray):
+            intersection1_second = self.detector_1.back.intersection(ray)
 
-            # check intersection with the sides
+        # check intersection with the sides
+        if not isinstance(intersection1_second, np.ndarray):
             for i,side in enumerate(self.detector_1.sides):
-
-                intersect1_second = side.intersection(ray)
-
-                if isinstance(intersect1_second, np.ndarray):
+                intersection1_second = side.intersection(ray)
+                if isinstance(intersection1_second, np.ndarray):
                     break
 
-        # # if the ray came from the oposite direction, discard it
-        # if np.linalg.norm(intersect1_second - source_point) < np.linalg.norm(point - source_point):
-        #     return
-
-        # if there is not a collission with any other facet of the detector
-        if not isinstance(intersect1_second, np.ndarray):
-            print("! no intersection with the back/side face of the first detector")
+        if not isinstance(intersection1_second, np.ndarray):
+            rospy.logerr("!! no 2nd intersection found with the detector")
             return
 
+        # # if the ray came from the oposite direction, discard it
+        # if np.linalg.norm(intersect1 - source_point) < np.linalg.norm(point - source_point):
+        #     return
+
         # calculate the length of the intersection with the detector
-        intersection_len = np.linalg.norm(point - intersect1_second)
+        intersection_len = np.linalg.norm(point - intersection1_second)
 
         # scatter the ray
-        scattered_ray, electron_energy, theta = self.comptonScattering(point, intersect1_second, energy, self.detector_1.material, cs_cross_section, cs_density)
+        scattered_ray, electron_energy, theta = self.comptonScattering(point, intersection1_second, energy, self.detector_1.material, cs_cross_section, cs_density)
 
         # if not scattering happened, just leave
         if not isinstance(scattered_ray, Ray):
@@ -387,14 +384,13 @@ class ComptonCamera:
         # check the collision with the other detector's back side
         intersect2_second = self.detector_1.back.intersection(scattered_ray)
 
+        if not isinstance(intersect2_second, np.ndarray):
+            intersect2_second = self.detector_1.front.intersection(scattered_ray)
+
         # no collision with the back face
         if not isinstance(intersect2_second, np.ndarray):
-
-            # intersection with the sides
             for i,side in enumerate(self.detector_1.sides):
-
                 intersect2_second = side.intersection(scattered_ray)
-
                 if isinstance(intersect2_second, np.ndarray):
                     break
 
@@ -421,7 +417,7 @@ class ComptonCamera:
         position_weight = random.uniform(0.0, 1.0)
         absorption_point = position_weight*scattered_ray.rayPoint + (1 - position_weight)*intersect2_second
 
-        print("Complete compton: p_energy: {}, absorber_thickness: {}, prob_pe: {}".format(scattered_ray.energy, pe_thickness, prob_pe))
+        # print("Complete compton: p_energy: {}, absorber_thickness: {}, prob_pe: {}".format(scattered_ray.energy, pe_thickness, prob_pe))
 
         cluster_list = ClusterListMsg()
 

@@ -74,13 +74,13 @@ class Rectangle3D:
     # #} end of rayCollision()
 
     # #{ plotVertices()
-    
+
     def plotVertices(self):
-    
+
         xs = [point[0] for point in self.points_3d]
         ys = [point[1] for point in self.points_3d]
         zs = [point[2] for point in self.points_3d]
-    
+
         return xs, ys, zs
-    
+
     # #} end of plotVertices()
