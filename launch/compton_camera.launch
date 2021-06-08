@@ -15,7 +15,7 @@
 
       <!-- subscribed topics -->
       <remap from="~radiation_source_in" to="/radiation/sources" />
-      <remap from="~odometry_in" to="odometry/odom_main" />
+      <remap from="~odometry_in" to="ground_truth" />
 
       <!-- advertised topics -->
       <remap from="~cone_out" to="~cone" />
