@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 
 import rospy
-# import tf
 import os
 
 import time
@@ -216,6 +215,7 @@ class ComptonCamera:
         [self.a1, self.b1, self.c1, self.d1, e1, f1, g1, h1] = self.detector_1.getVertices()
 
         # parameters
+        self._offset_ = rospy.get_param('~offset')
         self.rad_timer_dt = rospy.get_param('~rad_timer_dt')
         self.energy_granularity = rospy.get_param('~energy_granularity')
         self.frame_id = rospy.get_param('~frame_id')
@@ -566,8 +566,22 @@ class ComptonCamera:
                                          self.odometry.pose.pose.orientation.y,
                                          self.odometry.pose.pose.orientation.z)
 
+        # try:
+        #     position, quaternion = self.listener.lookupTransform("uav1/gps_origin", "uav1/fcu", rospy.Time(0))
+
+        if self._offset_ == "left":
+          offset = Quaternion(0.707, 0, 0, 0.707)
+          self.quaternion_d2w = offset * self.quaternion_d2w
+
+        if self._offset_ == "right":
+          offset = Quaternion(0.707, 0, 0, -0.707)
+          self.quaternion_d2w = offset * self.quaternion_d2w
+
         # drone2world
         self.quaternion_w2d = self.quaternion_d2w.inverse
+
+        # except:
+        #     rospy.logerr('no transform from {} to {}'.format(self._uav_name_ + "/fcu", self.inmid_frame_id))
 
     # #} end of callbackOdometry()
 

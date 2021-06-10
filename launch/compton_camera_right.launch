@@ -1,0 +1,34 @@
+<launch>
+
+  <arg name="UAV_NAME" default="$(optenv UAV_NAME uav)"/>
+  <arg name="frame_id" default="$(arg UAV_NAME)/compton_camera_right"/>
+  <arg name="inmid_frame_id" default="$(arg UAV_NAME)/compton_camera_right_inmid"/>
+
+  <group ns="$(arg UAV_NAME)">
+
+    <node pkg="tf2_ros" type="static_transform_publisher" name="$(arg UAV_NAME)_compton_right_to_fcu" args="0.1 0.0 0.0 0.0 1.57 1.57 $(arg UAV_NAME)/fcu $(arg frame_id)" />
+    <!-- <node pkg="tf2_ros" type="static_transform_publisher" name="$(arg UAV_NAME)_compton_right_inmid" args="0.1 0.0 0.0 0.0 0.0 3.1415 $(arg UAV_NAME)/fcu $(arg inmid_frame_id)" /> -->
+    <!-- <node pkg="tf2_ros" type="static_transform_publisher" name="$(arg UAV_NAME)_compton_right_to_fcu" args="0.0 0.0 0.0 0.0 1.57 0.0 $(arg inmid_frame_id) $(arg frame_id)" /> -->
+
+    <node name="compton_camera_right" pkg="gazebo_compton_camera_python" type="compton_camera.py" output="screen">
+
+      <rosparam file="$(find gazebo_compton_camera_python)/config/compton_camera.yaml" command="load" />
+
+      <param name="offset" value="right" />
+      <param name="uav_name" value="$(arg UAV_NAME)" />
+      <param name="frame_id" value="$(arg frame_id)" />
+      <param name="inmid_frame_id" value="$(arg inmid_frame_id)" />
+
+      <!-- subscribed topics -->
+      <remap from="~radiation_source_in" to="/radiation/sources" />
+      <remap from="~odometry_in" to="ground_truth" />
+
+      <!-- advertised topics -->
+      <remap from="~cone_out" to="~cone" />
+      <remap from="~cluster_list_out" to="~cluster_list" />
+
+    </node>
+
+  </group>
+
+</launch>
