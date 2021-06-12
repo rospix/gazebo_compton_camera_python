@@ -25,7 +25,7 @@
 
       <!-- advertised topics -->
       <remap from="~cone_out" to="~cone" />
-      <remap from="~cluster_list_out" to="rospix3/left/cluester_list" />
+      <remap from="~cluster_list_out" to="rospix3/left/cluster_list" />
 
     </node>
 
