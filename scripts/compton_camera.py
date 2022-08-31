@@ -593,7 +593,7 @@ class ComptonCamera:
             return
 
         if not self.got_odometry or not self.got_radiation:
-            rospy.loginfo_throttle(1.0, '[ComptonCamera]: waiting for data')
+            rospy.loginfo_throttle(1.0, '[ComptonCamera]: waiting for data, got odometry = {}, got radiation = {}'.format(self.got_odometry, self.got_radiation))
             return
 
         # for each of the sources in the scene
