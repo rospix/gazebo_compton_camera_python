@@ -346,6 +346,14 @@ class ComptonCamera:
 
         ray_from_source = Ray(source_point, point, energy)
 
+        # simulate air attenuatin
+        prob_air = np.exp(-0.01*(np.linalg.norm(point - source_point)))
+
+        rospy.loginfo_throttle(1.0, 'prob due to air {}'.format(prob_air))
+
+        if random.uniform(0.0, 1.0) > prob_air:
+            return
+
         # new ray starting just after the facet
         ray = Ray(point + ray_from_source.rayDirection*0.0000001, point + ray_from_source.rayDirection, energy)
 
