@@ -94,7 +94,9 @@ class Detector:
         self.h = np.array([-self.thickness/2, -self.size/2.0, self.size/2.0]) + position
 
         # create the sympy back plane
-        self.back = Rectangle3D([self.e, self.f, self.g, self.h])
+        #self.back = Rectangle3D([self.e, self.f, self.g, self.h])
+        #DONE changed orientation of the back facet
+        self.back = Rectangle3D([self.e, self.h, self.g, self.f])
 
         # orthogonal basis of the detector
         self.b1 = np.array([0, self.size, 0])
@@ -620,11 +622,11 @@ class ComptonCamera:
             # rospy.loginfo_throttle(1.0, 'Source in FCU: {} {} {}'.format(source_position_in_local[0], source_position_in_local[1], source_position_in_local[2]))
 
             # for each facet of the detector
-            facets = [self.detector_1.front, self.detector_1.sides[0], self.detector_1.sides[1], self.detector_1.sides[2], self.detector_1.sides[3]]
+            # DONE added back facet
+            facets = [self.detector_1.front, self.detector_1.sides[0], self.detector_1.sides[1], self.detector_1.sides[2], self.detector_1.sides[3], self.detector_1.back]
 
             for facet_idx,facet in enumerate(facets):
-
-                # print("facet_idx: {}, facet_idx, facet.plane.planeNormal: {}".format(facet_idx, facet.plane.planeNormal))
+                #print("facet_idx: {}, facet_idx, facet.plane.planeNormal: {}".format(facet_idx, facet.plane.planeNormal))
                 # print("source_position_in_local: {}".format(source_position_in_local))
 
                 # check if the facet is in the right orientation towards the source
@@ -669,7 +671,7 @@ class ComptonCamera:
 
                 duration = (rospy.Time.now() - time_start).to_sec()
 
-                rospy.loginfo_throttle(1.0, '[ComptonCamera]: aparent_activity of the source {} towards the facet {} is {} ({}), duration={} s'.format(source.id, facet_idx, aparent_activity, n_particles, duration))
+                rospy.loginfo('[ComptonCamera]: aparent_activity of the source {} towards the facet {} is {} ({}), duration={} s'.format(source.id, facet_idx, aparent_activity, n_particles, duration))
 
     # #} end of callbackOdometry()
 
