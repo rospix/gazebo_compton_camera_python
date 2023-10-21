@@ -20,7 +20,7 @@
       <param name="inmid_frame_id" value="$(arg inmid_frame_id)" />
 
       <!-- subscribed topics -->
-      <remap from="~radiation_source_in" to="/radiation/sources" />
+      <remap from="~radiation_source_in" to="/michal/radiation/sources" />
       <remap from="~odometry_in" to="estimation_manager/odom_main" />
 
       <!-- advertised topics -->
