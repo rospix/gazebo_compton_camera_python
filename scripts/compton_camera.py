@@ -671,7 +671,7 @@ class ComptonCamera:
 
                 duration = (rospy.Time.now() - time_start).to_sec()
 
-                rospy.loginfo_throttle(1.0, '[ComptonCamera]: aparent_activity of the source {} towards the facet {} is {} ({}), duration={} s'.format(source.id, facet_idx, aparent_activity, n_particles, duration))
+                rospy.loginfo('[ComptonCamera]: aparent_activity of the source {} towards the facet {} is {} ({}), duration={} s'.format(source.id, facet_idx, aparent_activity, n_particles, duration))
 
     # #} end of callbackOdometry()
 
